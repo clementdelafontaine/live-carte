@@ -39,9 +39,7 @@ if ($_GET['act']=='disconnect') {
 	<link href="assets/css/style-responsive.css" rel="stylesheet" />
 	<link href="assets/css/theme/blue.css" id="theme" rel="stylesheet" />
 	<!-- ================== END BASE CSS STYLE ================== -->
-
 	<!-- ================== BEGIN PAGE LEVEL STYLE ================== -->
-
 	<!-- ================== END PAGE LEVEL STYLE ================== -->
 	<!-- ================== BEGIN BASE JS ================== -->
 	<!-- ================== END BASE JS ================== -->
@@ -82,13 +80,7 @@ if ($_GET['act']=='disconnect') {
 						{
 							echo '<li><img title="'.$row['label'].'"	alt="'.$row['label'].'"	 	src="images/bannieres/'.$row['url_image'].'" class="img-responsive" ></li>';						
 						}
-					}
-				
-				
-				
-				
-				
-				
+					}				
 				?>							
 					</div>
 			      			

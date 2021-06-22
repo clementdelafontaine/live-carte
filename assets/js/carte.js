@@ -8,7 +8,7 @@ function initCarte() {
     const c_shadowAnchor = [5, 14];
     const couleur1 = 'blue';
     const couleur2 = 'red';
-
+    
     var carte = L.map('mapid');
     var mainLayer = L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
           attribution: 'Map data &copy; <a href="http://www.osm.org">OpenStreetMap</a>'
@@ -19,7 +19,8 @@ function initCarte() {
     console.log('url gpx : '+url1);
     console.log('url gpx : '+url2);
 
-    new L.GPX(url1, {
+    //Couche gpx
+    var gpx1 = new L.GPX(url1, {
         async: true,
         marker_options: {
             startIconUrl: 'leaflet/img/pin-icon-start.png',
@@ -43,7 +44,7 @@ function initCarte() {
         console.log('distance de la trace : '+gpx.get_distance());
       }).addTo(carte);
 
-      new L.GPX(url2, {
+      var gpx2 = new L.GPX(url2, {
         async: true,
         marker_options: {
             startIconUrl: 'leaflet/img/pin-icon-start.png',
@@ -62,9 +63,14 @@ function initCarte() {
                 color: couleur2
             }
         }).on('loaded', function(e) {
-        var gpx2 = e.target;
+        var gpx = e.target;
         carte.fitBounds(gpx2.getBounds());
         console.log('distance de la trace : '+gpx2.get_distance());
+
+
+        //Couche waypoints
+        L.marker(gpx2.getDistanceToCoord(url2,10000)).addTo(carte);
       }).addTo(carte);
 
+      
 }

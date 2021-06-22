@@ -144,8 +144,9 @@ if ($_GET['act']=='disconnect') {
   	<script type="text/javascript" src="2017/js/jquery.cycle.all.js"></script>
 	<!-- ================== LEAFLET ================== -->
 	<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/1.5.1/gpx.min.js"></script>
-	<script src="assets/js/carte.js"></script>					
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/1.5.1/gpx.min.js"></script> -->
+    <script src="assets/plugins/leaflet-gpx/gpx.js"></script>
+	<script src="assets/js/carte.js"></script>
 	<!--[if lt IE 9]>
 		<script src="assets/crossbrowserjs/html5shiv.js"></script>
 		<script src="assets/crossbrowserjs/respond.min.js"></script>
