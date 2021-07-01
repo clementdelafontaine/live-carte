@@ -166,6 +166,7 @@ if ($_GET['act']=='disconnect') {
     <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/1.5.1/gpx.min.js"></script> -->
     <script src="assets/plugins/leaflet-gpx/gpx.js"></script>
 	<script src="assets/js/carte.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/@turf/turf@5/turf.min.js"></script>
 	<!--[if lt IE 9]>
 		<script src="assets/crossbrowserjs/html5shiv.js"></script>
 		<script src="assets/crossbrowserjs/respond.min.js"></script>

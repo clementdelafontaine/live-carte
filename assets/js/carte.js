@@ -1,6 +1,6 @@
 function initCarte() {
     // url du gpx
-    const url1 = 'leaflet/geojson/track_points.geojson';
+    const url1 = 'leaflet/geojson/tracks.geojson';
     const url2 = 'leaflet/gpx/activity_2.gpx';
     const c_iconSize = [10, 15];
     const c_shadowSize = [15, 15];
@@ -19,9 +19,48 @@ function initCarte() {
     console.log('url gpx : '+url1);
     console.log('url gpx : '+url2);
 
+    //Chargement geojson
+    // var xmlobj = new XMLHttpRequest();
+    // xmlobj.overrideMimeType("application/json");
+    // xmlobj.open('GET', url1, true);
+
+    // xmlobj.onreadystatechange = function() {
+    //   if (xmlobj.readyState == 4 && xmlobj.status == 200){
+    //     callback(xmlobj.responseText)
+    //   }
+    // };
+
+    // xmlobj.send();
+
+    fetch(url1)
+    .then(function (response) {
+      return response.json();
+    })
+    .then(function (data){
+      var dataGeojson1 = new L.geoJSON(data, {
+        async: true,
+        marker_options: {
+            startIconUrl: 'leaflet/img/pin-icon-start.png',
+            endIconUrl: 'leaflet/img/pin-icon-end.png',
+            shadowUrl: 'leaflet/img/pin-shadow.png',
+            wptIconUrls: {
+                '': 'leaflet/img/pin-icon-wpt.png',
+                //Specifier ici le nom du waypoint
+              },
+              iconSize: c_iconSize,
+              shadowSize: c_shadowSize,
+              iconAnchor: c_iconAnchor,
+              shadowAnchor: c_shadowAnchor,
+            },
+            polyline_options: {
+                color: couleur1
+            }
+        }).on('loaded', function(e) {
+        var dataGeojson1 = e.target;
+        carte.fitBounds(dataGeojson1.getBounds());
+        }).addTo(carte)});
+    
     //Couche gpx
-    var geojson1 = new L.geoJSON(url1).addTo(carte);
-    carte.fitBounds(geojson1.getBounds());
     // var gpx1 = new L.GPX(url1, {
     //     async: true,
     //     marker_options: {
@@ -71,7 +110,7 @@ function initCarte() {
 
 
         //Couche waypoints
-        L.marker(gpx2.getDistanceToCoord(url2,10000)).addTo(carte);
+        // L.marker(gpx2.getDistanceToCoord(url2,10000)).addTo(carte);
       }).addTo(carte);
 
       
