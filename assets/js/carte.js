@@ -1,6 +1,6 @@
 function initCarte() {
     // url du gpx
-    const url1 = 'leaflet/gpx/activity_1.gpx';
+    const url1 = 'leaflet/geojson/track_points.geojson';
     const url2 = 'leaflet/gpx/activity_2.gpx';
     const c_iconSize = [10, 15];
     const c_shadowSize = [15, 15];
@@ -20,29 +20,31 @@ function initCarte() {
     console.log('url gpx : '+url2);
 
     //Couche gpx
-    var gpx1 = new L.GPX(url1, {
-        async: true,
-        marker_options: {
-            startIconUrl: 'leaflet/img/pin-icon-start.png',
-            endIconUrl: 'leaflet/img/pin-icon-end.png',
-            shadowUrl: 'leaflet/img/pin-shadow.png',
-            wptIconUrls: {
-                '': 'leaflet/img/pin-icon-wpt.png',
-                //Specifier ici le nom du waypoint
-              },
-              iconSize: c_iconSize,
-              shadowSize: c_shadowSize,
-              iconAnchor: c_iconAnchor,
-              shadowAnchor: c_shadowAnchor,
-            },
-            polyline_options: {
-                color: couleur1
-            }
-        }).on('loaded', function(e) {
-        var gpx = e.target;
-        carte.fitBounds(gpx.getBounds());
-        console.log('distance de la trace : '+gpx.get_distance());
-      }).addTo(carte);
+    var geojson1 = new L.geoJSON(url1).addTo(carte);
+    carte.fitBounds(geojson1.getBounds());
+    // var gpx1 = new L.GPX(url1, {
+    //     async: true,
+    //     marker_options: {
+    //         startIconUrl: 'leaflet/img/pin-icon-start.png',
+    //         endIconUrl: 'leaflet/img/pin-icon-end.png',
+    //         shadowUrl: 'leaflet/img/pin-shadow.png',
+    //         wptIconUrls: {
+    //             '': 'leaflet/img/pin-icon-wpt.png',
+    //             //Specifier ici le nom du waypoint
+    //           },
+    //           iconSize: c_iconSize,
+    //           shadowSize: c_shadowSize,
+    //           iconAnchor: c_iconAnchor,
+    //           shadowAnchor: c_shadowAnchor,
+    //         },
+    //         polyline_options: {
+    //             color: couleur1
+    //         }
+    //     }).on('loaded', function(e) {
+    //     var gpx = e.target;
+    //     carte.fitBounds(gpx.getBounds());
+    //     console.log('distance de la trace : '+gpx.get_distance());
+    //   }).addTo(carte);
 
       var gpx2 = new L.GPX(url2, {
         async: true,

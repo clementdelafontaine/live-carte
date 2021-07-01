@@ -48,7 +48,26 @@ if ($_GET['act']=='disconnect') {
 	<!-- ================== BEGIN BASE JS ================== -->
 	<!-- ================== END BASE JS ================== -->
 </head>
-<body data-spy="scroll" data-target="#header-navbar" data-offset="51" onload="initCarte()">
+<?php
+	if (!isset($_GET['idEpreuve'])){
+		header("HTTP/1.0 400 Bad Request");
+		exit;
+	} else if (!ctype_digit($_GET['idEpreuve'])){		
+		header("HTTP/1.0 404 Not Found");
+		exit;
+	} else {
+		$idEpreuve = ($_GET['idEpreuve']);
+
+		// Récupération des noms des GPX
+		$requeteEpreuve = "SELECT * FROM c_gpx WHERE id_epreuve=".$idEpreuve.";";
+		$gpx = $mysqli->query($requeteEpreuve);
+
+		//Creation du geoJSON pour les points d'intéret
+
+	}
+	
+	echo '<body data-spy="scroll" data-target="#header-navbar" data-offset="51" onload="initCarte('.$idEpreuve.')">';
+	?>
     <!-- begin #page-container -->
     <div id="page-container">
         
