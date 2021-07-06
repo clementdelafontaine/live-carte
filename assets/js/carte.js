@@ -34,12 +34,10 @@ function initCarte() {
 
   
 
-  //Construction
+  // Construction de la partie carte et chargement des tuiles
   var carte = L.map('mapid');
   var mainLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', {
     attribution: 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ, TomTom, Intermap, iPC, USGS, FAO, NPS, NRCAN, GeoBase, Kadaster NL, Ordnance Survey, Esri Japan, METI, Esri China (Hong Kong), and the GIS User Community'
-    // = L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    //   attribution: 'Map data &copy; <a href="http://www.osm.org">OpenStreetMap</a>'
     ,
     async: true
   }).addTo(carte);
@@ -47,20 +45,23 @@ function initCarte() {
 
   // Boutons de l'interface
   var control = L.control.layers(null, null).addTo(carte);
+  let dataGeojson = new Array();
+  var parcoursCourants = new L.LayerGroup();
 
   //Chargement geojson
   //chargement des urls
-  readTextFile("leaflet/geojson/7232/url.json", function (text) {
+  readTextFile("leaflet/geojson/"+idEpreuve+"/url.json")
+  .then(function(text) {
     var url = JSON.parse(text);
     console.log(url);
-  }).then(function(url) {
     for (let i = 0; i < url.length; i++) {
       fetch(url[i].url)
         .then(function (response) {
           return response.json();
         })
         .then(function (data) {
-          var dataGeojson1 = new L.geoJSON(data, {
+          // Création de la couche
+          dataGeojson[i] = new L.geoJSON(data, {
             async: true,
             style: function (feature) {
               var type = feature.geometry.type;
@@ -92,32 +93,41 @@ function initCarte() {
               }
             },
             onEachFeature: function (feature, layer) {
-              var popupText = "<b>" + feature.properties.popupContent + "</b>";
+              var popupText = "<b>" + feature.properties.name + "</b>";
               if (feature.properties.category == "inter")
                 popupText += "<br><a href='" + feature.properties.url + "'>Photos</a>";
+              if (typeof feature.properties.popupContent !== 'undefined')
+                popupText += "<br><p>"+feature.properties.popupContent+"</p>";
 
               layer.bindPopup(popupText, {
                 closeButton: true,
                 offset: L.point(0, -20)
               });
             }
-          }).addTo(carte);
-
-          carte.fitBounds(dataGeojson1.getBounds());
+          });
+          // dataGeojson[i].addTo(carte);
+          //La couche parcoursCourants permet d'adapter le zoom aux parcours affichés
+          parcoursCourants.addLayer(dataGeojson[i]);
+          //Fin création de la couche i
         });
+        //Fin for
     }
+    parcoursCourants.addTo(carte);
+    carte.fitBounds(parcoursCourants.getLatLng());
   });
 }
 
 function readTextFile(file, callback) {
+  return new Promise((resolve, reject) => {
   var xmlhttp = new XMLHttpRequest();
   xmlhttp.overrideMimeType("application/json");
   xmlhttp.open("GET", file, true);
   xmlhttp.onreadystatechange = function () {
     console.log("readyState : " + this.readyState + " status : " + this.status);
     if (this.readyState == 4 && this.status == 200) {
-      callback(this.responseText);
+      resolve(this.responseText);
     }
   }
   xmlhttp.send(null);
+})
 }
