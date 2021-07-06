@@ -43,31 +43,10 @@ if ($_GET['act']=='disconnect') {
 	<!-- ================== END BASE CSS STYLE ================== -->
 
 	<!-- ================== BEGIN PAGE LEVEL STYLE ================== -->
-
 	<!-- ================== END PAGE LEVEL STYLE ================== -->
-	<!-- ================== BEGIN BASE JS ================== -->
-	<!-- ================== END BASE JS ================== -->
 </head>
-<?php
-	if (!isset($_GET['idEpreuve'])){
-		header("HTTP/1.0 400 Bad Request");
-		exit;
-	} else if (!ctype_digit($_GET['idEpreuve'])){		
-		header("HTTP/1.0 404 Not Found");
-		exit;
-	} else {
-		$idEpreuve = ($_GET['idEpreuve']);
-
-		// Récupération des noms des GPX
-		$requeteEpreuve = "SELECT * FROM c_gpx WHERE id_epreuve=".$idEpreuve.";";
-		$gpx = $mysqli->query($requeteEpreuve);
-
-		//Creation du geoJSON pour les points d'intéret
-
-	}
+<?php echo '<body data-spy="scroll" data-target="#header-navbar" data-offset="51">'; ?>
 	
-	echo '<body data-spy="scroll" data-target="#header-navbar" data-offset="51" onload="initCarte('.$idEpreuve.')">';
-	?>
     <!-- begin #page-container -->
     <div id="page-container">
         
@@ -194,8 +173,39 @@ if ($_GET['act']=='disconnect') {
 		$(document).ready(function() {
 		    App.init();
 		});
-		
 	</script>
+
+	<?php
+		if (!isset($_GET['idEpreuve'])){
+			header("HTTP/1.0 400 Bad Request");
+			// Ne pas afficher de carte ou afficher une carte par défaut
+			?>
+			<script>
+				$(document).ready(function() {
+					//initCarte();
+				});
+			</script><?php
+		} else if (!ctype_digit($_GET['idEpreuve'])){		
+			header("HTTP/1.0 404 Not Found");
+			exit;
+		} else {
+			$idEpreuve = ($_GET['idEpreuve']);
+
+			// Récupération des noms des GPX
+			// $requeteEpreuve = "SELECT * FROM c_gpx WHERE id_epreuve=".$idEpreuve.";";
+			// $gpx = $mysqli->query($requeteEpreuve);
+
+			// Passage du nom de l'épreuve vers javascript
+			echo '<div id="idEpreuve" style="display: none;">';
+				echo htmlspecialchars($idEpreuve);
+			echo '</div>';?>
+			<script>
+				$(document).ready(function() {
+					initCarte();
+				});
+			</script><?php
+			}
+		?>
 
 </body>
 </html>
