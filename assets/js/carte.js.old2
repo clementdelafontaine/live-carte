@@ -41,18 +41,15 @@ function initCarte() {
     ,
     async: true
   }).addTo(carte);
-  carte.setView([43.611395, 3.868939], 10);
+  carte.setView([43.611395, 3.868939], 13);
 
   // Boutons de l'interface
-  //Echelle
-  var scale = L.control.scale();
-  scale.addTo(carte);
-
+  var control = L.control.layers(null, null).addTo(carte);
   let dataGeojson = new Array();
-  var parcoursCourants = new L.FeatureGroup();
+  var parcoursCourants = new L.FeatureGroup().addTo(carte);
 
-  //Chargement geojson
-  //#TODO créer une promise contenant la boucle for
+  //Chargement geojson dans une promise afin de charger les limites de la carte à la fin du chargement
+  
   //chargement des urls
   readTextFile("leaflet/geojson/"+idEpreuve+"/url.json")
   .then(function(text) {
@@ -107,34 +104,34 @@ function initCarte() {
                 offset: L.point(0, -20)
               });
             }
-          }).addTo(carte);
-          //Fin création de la couche i
-        }).then(function (parcoursCourant) {
-          //La couche parcoursCourants permet d'adapter le zoom à tous les parcours au chargement de la carte mais n'est pas affiché sur la carte
+          });
+          //La couche parcoursCourants permet d'adapter le zoom aux parcours affichés
           parcoursCourants.addLayer(dataGeojson[i]);
-          console.log("bounds de parcoursCourant : "+parcoursCourants.getBounds());
-          carte.fitBounds(parcoursCourants.getBounds());
+          //Fin création de la couche i
         });
         //Fin for
-    }    
+    }
+    
+    // parcoursCourants.addTo(carte);
     // console.log("bounds de parcoursCourant : "+parcoursCourants.getBounds());
     // carte.fitBounds(parcoursCourants.getBounds());
-    setTimeout (function() {
-      var parcours = {
-        "Parcours 1": dataGeojson[0],
-        "Parcours 2": dataGeojson[1],
-        "Parcours 3": dataGeojson[2]
-      };
-      L.control.layers(null,parcours).addTo(carte);
-  }, 2000);
+  //   setTimeout (function() {
+  //   // parcoursCourants.addTo(carte);
+  //   // console.log("bounds de parcoursCourant : "+parcoursCourants.getBounds());
+  //   // carte.fitBounds(parcoursCourants.getBounds());
+  // }, 2000);
   })
-  // .then(function (parcoursCourant) {
+
+  Promise.all(promises).then(fullfilled=>{
+    console.log(fullfilled);
+    carte.fitBounds(parcoursCourants.getBounds());
+  });
+  // .then(function(parcoursCourant){
   //   console.log("bounds de parcoursCourant : "+parcoursCourants.getBounds());
   //   carte.fitBounds(parcoursCourants.getBounds());
-  // });
+  // })
 }
 
-//Récupération d'un fichier texte dans une promise
 function readTextFile(file, callback) {
   return new Promise((resolve, reject) => {
   var xmlhttp = new XMLHttpRequest();
