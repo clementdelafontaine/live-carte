@@ -35,13 +35,22 @@ function initCarte() {
   
 
   // Construction de la partie carte et chargement des tuiles
-  var carte = L.map('mapid');
-  var mainLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', {
-    attribution: 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ, TomTom, Intermap, iPC, USGS, FAO, NPS, NRCAN, GeoBase, Kadaster NL, Ordnance Survey, Esri Japan, METI, Esri China (Hong Kong), and the GIS User Community'
-    ,
-    async: true
-  }).addTo(carte);
-  carte.setView([43.611395, 3.868939], 10);
+  var plan = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', {
+    attribution: 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ, TomTom, Intermap, iPC, USGS, FAO, NPS, NRCAN, GeoBase, Kadaster NL, Ordnance Survey, Esri Japan, METI, Esri China (Hong Kong), and the GIS User Community'}),
+    Esri_WorldImagery = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+    attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
+  });
+
+  var carte = L.map('mapid', {
+    center: [43.611395, 3.868939],
+    zoom: 10,
+    layers: [Esri_WorldImagery, plan]
+  });
+
+  var baseMaps = {
+    "Satellite": Esri_WorldImagery,
+    "Plan": plan
+  };
 
   // Boutons de l'interface
   //Echelle
@@ -49,6 +58,7 @@ function initCarte() {
   scale.addTo(carte);
 
   let dataGeojson = new Array();
+  let noms = new Array();
   var parcoursCourants = new L.FeatureGroup();
 
   //Chargement geojson
@@ -58,7 +68,8 @@ function initCarte() {
   .then(function(text) {
     var url = JSON.parse(text);
     console.log(url);
-    for (let i = 0; i < url.length; i++) {
+    var nbCouches = url.length;
+    for (let i = 0; i < nbCouches; i++) {
       fetch(url[i].url)
         .then(function (response) {
           return response.json();
@@ -70,6 +81,7 @@ function initCarte() {
               var type = feature.geometry.type;
               if (type == "MultiLineString") {
                 var colorLine = feature.properties.color;
+                noms[i] = feature.properties.name + " - " + feature.properties.distance + " km";
                 console.log("couleur : " + colorLine);
                 if (colorLine != null) {
                   return { color: colorLine };
@@ -99,8 +111,9 @@ function initCarte() {
               var popupText = "<b>" + feature.properties.name + "</b>";
               if (feature.properties.category == "inter")
                 popupText += "<br><a href='" + feature.properties.url + "'>Photos</a>";
+              popupText += "<p>"+noms[i]+"</p>";
               if (typeof feature.properties.popupContent !== 'undefined')
-                popupText += "<br><p>"+feature.properties.popupContent+"</p>";
+                popupText += "<p>"+feature.properties.popupContent+"</p>";
 
               layer.bindPopup(popupText, {
                 closeButton: true,
@@ -112,26 +125,19 @@ function initCarte() {
         }).then(function (parcoursCourant) {
           //La couche parcoursCourants permet d'adapter le zoom à tous les parcours au chargement de la carte mais n'est pas affiché sur la carte
           parcoursCourants.addLayer(dataGeojson[i]);
-          console.log("bounds de parcoursCourant : "+parcoursCourants.getBounds());
           carte.fitBounds(parcoursCourants.getBounds());
         });
         //Fin for
-    }    
-    // console.log("bounds de parcoursCourant : "+parcoursCourants.getBounds());
-    // carte.fitBounds(parcoursCourants.getBounds());
+    }
     setTimeout (function() {
       var parcours = {
-        "Parcours 1": dataGeojson[0],
-        "Parcours 2": dataGeojson[1],
-        "Parcours 3": dataGeojson[2]
       };
-      L.control.layers(null,parcours).addTo(carte);
-  }, 2000);
-  })
-  // .then(function (parcoursCourant) {
-  //   console.log("bounds de parcoursCourant : "+parcoursCourants.getBounds());
-  //   carte.fitBounds(parcoursCourants.getBounds());
-  // });
+      for (let i = 0; i < nbCouches; i++) {
+        parcours[noms[i]] = dataGeojson[i];
+      }
+      L.control.layers(baseMaps,parcours).addTo(carte);
+  }, 1000);
+  });
 }
 
 //Récupération d'un fichier texte dans une promise
