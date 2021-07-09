@@ -176,13 +176,14 @@ if ($_GET['act']=='disconnect') {
 	</script>
 
 	<?php
+		//Si pas d'idEpreuve, on affiche une carte vide
 		if (!isset($_GET['idEpreuve'])){
 			header("HTTP/1.0 400 Bad Request");
 			// Ne pas afficher de carte ou afficher une carte par défaut
 			?>
 			<script>
 				$(document).ready(function() {
-					//initCarte();
+					carteDeBase();
 				});
 			</script><?php
 		} else if (!ctype_digit($_GET['idEpreuve'])){		
@@ -190,11 +191,6 @@ if ($_GET['act']=='disconnect') {
 			exit;
 		} else {
 			$idEpreuve = ($_GET['idEpreuve']);
-
-			// Récupération des noms des GPX
-			// $requeteEpreuve = "SELECT * FROM c_gpx WHERE id_epreuve=".$idEpreuve.";";
-			// $gpx = $mysqli->query($requeteEpreuve);
-
 			// Passage du nom de l'épreuve vers javascript
 			echo '<div id="idEpreuve" style="display: none;">';
 				echo htmlspecialchars($idEpreuve);
