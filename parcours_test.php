@@ -63,68 +63,12 @@ if ($_GET['act']=='disconnect') {
 			<div id="carte" class="content col-md-7 col-sm-7" data-scrollview="true">
 				<!-- begin container -->
 				<div id="mapid"></div>
+				<!-- begin js idEpreuve info -->
+				<div id='idEpreuve' style="display: none;"></div>
 			</div>
 
 			<div class="col-sm-1 col-md-1">
 			</div>
-
-		    <div class="col-md-4 col-sm-3">
-		    	<!-- begin #facebook -->
-					<div id="fb-root" ></div>
-						<script>(function(d, s, id) {
-	 						var js, fjs = d.getElementsByTagName(s)[0];
- 								if (d.getElementById(id)) return;
- 								js = d.createElement(s); js.id = id;
- 								js.src = 'https://connect.facebook.net/fr_FR/sdk.js#xfbml=1&version=v2.11';
- 								fjs.parentNode.insertBefore(js, fjs);
-								}(document, 'script', 'facebook-jssdk'));
-						</script>
-					<div class="fb-page img-responsive"  data-href="https://www.facebook.com/ats.sport" 
-						data-hide-cover="false" data-show-facepile="true">
-							<blockquote class="fb-xfbml-parse-ignore" cite="https://www.facebook.com/ats.sport">
-								<a href="https://www.facebook.com/ats.sport">ATS-Sport</a>
-							</blockquote>
-					</div>
-			</div>
-		</div>
-
-        <!-- begin #accroche -->
-        <div id="accroche" class="content" data-scrollview="true">
-            <!-- begin container -->
-            <div class="container-fluid" data-animation="true" data-animation-type="fadeInDown">
-                <!-- begin row -->
-                <div class="row">
-                    <div class="col-md-12 col-sm-12">
-             			<!-- begin #quote -->
-				        <div id="quote" class="content bg-black-darker has-bg" data-scrollview="true">
-				            <!-- begin content-bg -->
-				            <div class="content-bg">
-				                <img src="assets/img/quote-bg.jpg" alt="Quote" />
-				            </div>
-				            <!-- end content-bg -->
-				            <!-- begin container -->
-				            <div class="container-fluid" data-animation="true" data-animation-type="fadeInLeft">
-				                <!-- begin row -->
-				                <div class="row">
-				                    <!-- begin col-12 -->
-				                    <div class="col-md-12 quote">
-				                        <i class="fa fa-quote-left"></i> Chronométreur des Championnats du Monde cycliste <br />
-				                        <span class="text-theme">UCI Gran Fondo</span> 2017 à Albi !  
-				                        <i class="fa fa-quote-right"></i>
-				                        <small>Chronométrage, inscriptions en ligne, dossards</small>
-				                    </div>
-				                    <!-- end col-12 -->
-				                </div>
-				                <!-- end row -->
-				            </div>
-				            <!-- end container -->
-				        </div>
-				        <!-- end #quote -->
-                    </div>
-				</div>
-				<!-- end row -->
-			</div>
-		</div>
 
         <!-- footer -->
         <?php include( 'footer.php' ) ?>
@@ -175,7 +119,18 @@ if ($_GET['act']=='disconnect') {
 		});
 	</script>
 
-	<?php
+	<script>
+		var url = window.location.href;
+		var idEpreuve = url.split("/");
+		idEpreuve = idEpreuve[4];
+		var div = document.getElementById('idEpreuve');
+		div.textContent = idEpreuve;
+		if(document.readyState == "complete"){
+			initCarte();
+		}
+	</script>
+
+	<!-- <?php
 		//Si pas d'idEpreuve, on affiche une carte vide
 		if (!isset($_GET['idEpreuve'])){
 			header("HTTP/1.0 400 Bad Request");
@@ -201,7 +156,7 @@ if ($_GET['act']=='disconnect') {
 				});
 			</script><?php
 			}
-		?>
+		?> -->
 
 </body>
 </html>

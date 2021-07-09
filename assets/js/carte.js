@@ -33,31 +33,8 @@ function initCarte() {
   var interIcon = new PointIcon({ iconUrl: c_inter });
   var ravitoIcon = new PointIcon({ iconUrl: c_ravito });
 
-
-
   // Construction de la partie carte et chargement des tuiles
   carteDeBase();
-  // var plan = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', {
-  //   attribution: 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ, TomTom, Intermap, iPC, USGS, FAO, NPS, NRCAN, GeoBase, Kadaster NL, Ordnance Survey, Esri Japan, METI, Esri China (Hong Kong), and the GIS User Community'}),
-  //   Esri_WorldImagery = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-  //   attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
-  // });
-
-  // var carte = L.map('mapid', {
-  //   center: [43.611395, 3.868939],
-  //   zoom: 10,
-  //   layers: [Esri_WorldImagery, plan]
-  // });
-
-  // var baseMaps = {
-  //   "Satellite": Esri_WorldImagery,
-  //   "Plan": plan
-  // };
-
-  // // Boutons de l'interface
-  // //Echelle
-  // var scale = L.control.scale();
-  // scale.addTo(carte);
 
   let dataGeojson = new Array();
   let noms = new Array();
@@ -184,7 +161,7 @@ function carteDeBase() {
   scale = L.control.scale();
   scale.addTo(carte);
 
-  if (typeof document.getElementById("idEpreuve") == 'undefined') {
+  if  (document.getElementById('idEpreuve').textContent == '') {
     L.control.layers(baseMaps, null).addTo(carte);
   }
 }
