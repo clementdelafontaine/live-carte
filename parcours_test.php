@@ -63,8 +63,6 @@ if ($_GET['act']=='disconnect') {
 			<div id="carte" class="content col-md-7 col-sm-7" data-scrollview="true">
 				<!-- begin container -->
 				<div id="mapid"></div>
-				<!-- begin js idEpreuve info -->
-				<div id='idEpreuve' style="display: none;"></div>
 			</div>
 
 			<div class="col-sm-1 col-md-1">
@@ -119,7 +117,7 @@ if ($_GET['act']=='disconnect') {
 		});
 	</script>
 
-	<script>
+	<!-- <script>
 		var url = window.location.href;
 		var idEpreuve = url.split("/");
 		idEpreuve = idEpreuve[4];
@@ -128,9 +126,9 @@ if ($_GET['act']=='disconnect') {
 		if(document.readyState == "complete"){
 			initCarte();
 		}
-	</script>
+	</script> -->
 
-	<!-- <?php
+	<?php
 		//Si pas d'idEpreuve, on affiche une carte vide
 		if (!isset($_GET['idEpreuve'])){
 			header("HTTP/1.0 400 Bad Request");
@@ -156,7 +154,7 @@ if ($_GET['act']=='disconnect') {
 				});
 			</script><?php
 			}
-		?> -->
+		?>
 
 </body>
 </html>
