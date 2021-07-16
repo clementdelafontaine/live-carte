@@ -77,7 +77,7 @@ unset($_SESSION);
 			</div>
 
 			<!-- begin #form -->
-			<form action="/temp/toGeojson.php" method="post" id="formGeo" enctype="multipart/form-data">
+			<form action="/temp/toGeojson.php" method="POST" id="formGeo" enctype="multipart/form-data">
 				<div  class="row">
 					<div class="col-md-8">
 						<div class="form-group">
@@ -221,14 +221,27 @@ unset($_SESSION);
 
 	<script>
 		let form = document.getElementById('formGeo');
+		let geoFile = document.getElementById('trace');
+		console.log(geoFile);
+		form.addEventListener('submit', function(event) {
+			let trace = geoFile.files[0];//form.elements['trace'];
+			console.log('trace : '+trace.text());
+			// fetch(trace)
+			// 	.then(function (response) {
+			// 		console.log('response : '+response);
+			// 		return response.text();
+			// 	})
+			// 	.then(function (xml) {
+			// 		console.log('xml : '+xml)
+			// 		console.log(gpx(new DOMParser().parseFromString(xml, "text/xml")));
+			// 	});
 
-		form.addEventListener('submit', (event) => {
-			let trace = form.elements['trace'];
-			$.ajax(trace).done(function(xml){
-				console.log(toGeoJSON.gpx(xml));
-			});
+			// $.ajax(trace).done(function(xml){
+			// 	alert('oi');
+			// 	console.log(toGeoJSON.gpx(xml));
+			// });
 
-			//form.submit();
+			form.submit();
 		})
 	</script>
 
