@@ -1,9 +1,18 @@
 var plan, carte, baseMaps, scale;
 function initCarte() {
   //Récupération de l'idEpreuve
-  var div = document.getElementById("idEpreuve");
+  var div = document.getElementById('idEpreuve');
   const idEpreuve = div.textContent;
-  console.log("idEpreuve : " + idEpreuve);
+  console.log('idEpreuve : ' + idEpreuve);
+
+  //Vérification si dans le dossier temp
+  var div = document.getElementById('temp');
+  console.log('temp div content : ' + div.textContent);
+  var temp = (div.textContent == 'temp');
+  if (temp)
+    var root = '/temp/';
+  else
+    var root = '/';
 
   //Paramètres
   const c_iconSize = [25, 40];
@@ -12,11 +21,11 @@ function initCarte() {
   const c_shadowAnchor = [15, 40];
   const c_popupAnchor = [-3, -76];
 
-  const c_depart = 'leaflet/img/pin-icon-wpt.png';//'leaflet/img/pin-icon-start.png';
-  const c_arrivee = 'leaflet/img/pin-icon-wpt.png';//'leaflet/img/pin-icon-end.png';
-  const c_shadow = 'leaflet/img/pin-shadow.png';
-  const c_inter = 'leaflet/img/pin-icon-wpt.png';
-  const c_ravito = 'leaflet/img/pin-icon-wpt.png';
+  const c_depart = root+'leaflet/img/pin-icon-wpt.png';//'leaflet/img/pin-icon-start.png';
+  const c_arrivee = root+'leaflet/img/pin-icon-wpt.png';//'leaflet/img/pin-icon-end.png';
+  const c_shadow = root+'leaflet/img/pin-shadow.png';
+  const c_inter = root+'leaflet/img/pin-icon-wpt.png';
+  const c_ravito = root+'leaflet/img/pin-icon-wpt.png';
 
   //Icones
   var PointIcon = L.Icon.extend({
@@ -43,13 +52,13 @@ function initCarte() {
   //Chargement geojson
   //#TODO créer une promise contenant la boucle for
   //chargement des urls
-  readTextFile("leaflet/geojson/" + idEpreuve + "/url.json")
+  readTextFile(root+'leaflet/geojson/' + idEpreuve + '/url.json')
     .then(function (text) {
       var url = JSON.parse(text);
       console.log(url);
       var nbCouches = url.length;
       for (let i = 0; i < nbCouches; i++) {
-        fetch(url[i].url)
+        fetch(root+url[i].url)
           .then(function (response) {
             return response.json();
           })
