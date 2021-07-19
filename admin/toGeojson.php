@@ -1,17 +1,17 @@
 <html>
     <body>
         <?php
-             if($_SERVER["REQUEST_METHOD"] == 'POST' && isset($_POST['idEpreuve']) ){
+             if($_SERVER["REQUEST_METHOD"] == 'POST' && isset($_POST['idEpreuve']) && isset($_POST['idParcours']) ){
                 $uploadFolder = $_SERVER['DOCUMENT_ROOT'].'/temp/pageLive/'.$_POST['idEpreuve'];
                 $jsFolder = '/temp/pageLive/'.$_POST['idEpreuve'];
+                $idParcours = $_POST['idParcours'];
 
-                $type = "gpx";
                 // Vérification de l'upload du fichier (id : trace)
                 if(isset($_FILES['trace']) && $_FILES['trace']['error'] == 0){
                     // Récupération du nom et de l'extension
                     $filename = basename($_FILES["trace"]["name"]);
                     $type = pathinfo($filename, PATHINFO_EXTENSION);
-                    echo "filename : ".$filename." | type : ".$type;
+                    echo "filename : ".$filename." | type : ".$type." | idParcours : ".$idParcours;
                     // Vérification de l'existence du dossier de téléchargement et création si non existant
                     if (!is_dir($uploadFolder)){
                         mkdir($uploadFolder);
@@ -28,15 +28,19 @@
 
         <script>
                 // Récupération des variables
-                var path = "<?php echo "$jsFolder"."/".$filename?>";
-                var type = "<?php echo "$type"?>";
+                var file = "<?php echo $jsFolder.'/'.$filename; ?>";
+                var uploadFolder = "<?php echo "$uploadFolder".'/'; ?>";
+                var path = "<?php echo $jsFolder.'/';?>";
+                var type = "<?php echo "$type";?>";
+                var filename = "<?php echo $idParcours; ?>";
+                console.log('filename : '+filename);
 
                 // Variables de test d'extensions
                 var isGeojson = /geojson|json/.test(type.toLowerCase());
                 var isGpxKml = /gpx|kml/.test(type.toLowerCase());
 
                 if (isGeojson || isGpxKml){
-                    fetch(path)
+                    fetch(file)
                     .then(function (response) {
                         if (isGeojson)
                             return response.json();
@@ -52,6 +56,21 @@
                             return newGeoJSON;
                         }
                     }).then(function (data) {
+                        // Edition du fichier geojson
+                        // FeatureCollection/features
+                        // Feature/properties : shape(MultiLine), id, name, distance, color
+                        for (var key in data){
+                            console.log();
+                        }
+                        // Boucle pour chaque point
+                        // Feature/properties : shape(Marker), name, category ; optionnel : distance, url, popupContent
+                        
+                        // Feature/geometry : type(poin), coordinates ([x.000, y.000, z])
+                        // Enregistrement du fichier geojson
+                        var fd = new FormData();
+                        fd.append("json", JSON.stringify(data));
+                        fd.append("filename", uploadFolder+filename+'.geojson');
+                        fetch("/temp/ajax_geojson.php", {method:"POST", body:fd});
                         console.log(data);
                     });
                 } else

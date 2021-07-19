@@ -12,14 +12,15 @@ $evenements = evenements_a_venir( 8 );
 $resultats = derniers_resultats( 8 );
 
 //Si pas ou mauvaise idEpreuve, erreur
-if (!isset($_GET['idEpreuve'])) {
+if (!(isset($_GET['idEpreuve']) && isset($_GET['idParcours']))) {
 	header("HTTP/1.0 400 Bad Request");
 	exit;
-} else if (!ctype_digit($_GET['idEpreuve'])) {
+} else if (!(ctype_digit($_GET['idEpreuve']) && ctype_digit($_GET['idParcours']))) {
 	header("HTTP/1.0 404 Not Found");
 	exit;
 } else {
 	$idEpreuve = ($_GET['idEpreuve']);
+	$idParcours = ($_GET['idParcours']);
 }
 
 if ($_GET['act']=='disconnect') {
@@ -97,6 +98,12 @@ unset($_SESSION);
 						<div class="form-check">
 							<input type="checkbox" class="form-check-input" id="exampleCheck1">
 							<label class="form-check-label" for="exampleCheck1">Check me out</label>
+						</div>
+							<!-- hidden post -->
+							<input id="idEpreuve" name="idEpreuve" type="hidden" value="<?php echo $idEpreuve;?>">
+							<input id="idParcours" name="idParcours" type="hidden" value="<?php echo $idParcours;?>">
+						<div>
+
 						</div>
 						<button type="submit" class="btn btn-primary">Submit</button>
 					</div>
@@ -224,23 +231,8 @@ unset($_SESSION);
 		let geoFile = document.getElementById('trace');
 		console.log(geoFile);
 		form.addEventListener('submit', function(event) {
-			let trace = geoFile.files[0];//form.elements['trace'];
+			let trace = geoFile.files[0];
 			console.log('trace : '+trace.text());
-			// fetch(trace)
-			// 	.then(function (response) {
-			// 		console.log('response : '+response);
-			// 		return response.text();
-			// 	})
-			// 	.then(function (xml) {
-			// 		console.log('xml : '+xml)
-			// 		console.log(gpx(new DOMParser().parseFromString(xml, "text/xml")));
-			// 	});
-
-			// $.ajax(trace).done(function(xml){
-			// 	alert('oi');
-			// 	console.log(toGeoJSON.gpx(xml));
-			// });
-
 			form.submit();
 		})
 	</script>
