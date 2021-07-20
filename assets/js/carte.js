@@ -113,10 +113,14 @@ function initCarte() {
           }).then(function (parcoursCourant) {
             //La couche parcoursCourants permet d'adapter le zoom à tous les parcours au chargement de la carte mais n'est pas affiché sur la carte
             parcoursCourants.addLayer(dataGeojson[i]);
-            carte.fitBounds(parcoursCourants.getBounds());
+            setTimeout(function () {
+              // Zoom sur les zones avec animation
+              carte.flyToBounds(parcoursCourants.getBounds());
+            }, 1000);
           });
-        //Fin for
+        // Fin for
       }
+      // Création bouton de gestion des couches
       setTimeout(function () {
         var parcours = {
         };
@@ -124,7 +128,7 @@ function initCarte() {
           parcours[noms[i]] = dataGeojson[i];
         }
         L.control.layers(baseMaps, parcours).addTo(carte);
-      }, 1000);
+      }, 2000);
     });
 }
 
@@ -154,9 +158,9 @@ function carteDeBase() {
     });
 
   carte = L.map('mapid', {
-    center: [46.227638
-      , 2.213749],
-    zoom: 5.45,
+    center: [46.676105
+      , 2.550920],
+    zoom: 4,
     layers: [Esri_WorldImagery, plan]
   });
 

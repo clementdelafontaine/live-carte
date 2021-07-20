@@ -189,25 +189,24 @@ if ($_GET['act'] == 'disconnect') {
 		});
 	</script>
 
-	<!-- <script>
+	<script>
 		var url = window.location.href;
 		var urlidEpreuve = url.split('/');
 		if (urlidEpreuve[3] == 'temp') {
 			idEpreuve = urlidEpreuve[5];
 			var div = document.getElementById('temp');
 			div.textContent = 'temp';
-		} else
+		} else{
 			idEpreuve = urlidEpreuve[4];
+		}
 		console.log('idEpreuve : ' + idEpreuve);
 		var div = document.getElementById('idEpreuve');
 		div.textContent = idEpreuve;
 		if (document.readyState == 'loading')
 			initCarte();
-<<<<<<< HEAD
-		}
-	</script> -->
+	</script>
 
-	<?php
+	<!-- <?php
 		//Si pas d'idEpreuve, on affiche une carte vide
 		if (!isset($_GET['idEpreuve'])){
 			header("HTTP/1.0 400 Bad Request");
@@ -233,11 +232,8 @@ if ($_GET['act'] == 'disconnect') {
 				});
 			</script><?php
 			}
-		?>
+		?> -->
 
-=======
-	</script>
->>>>>>> 07dbdeffd29f33b2bf96956f64c7503e2dd7ac9d
 </body>
 
 </html>

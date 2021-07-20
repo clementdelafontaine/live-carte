@@ -2,8 +2,9 @@
     <body>
         <?php
              if($_SERVER["REQUEST_METHOD"] == 'POST' && isset($_POST['idEpreuve']) && isset($_POST['idParcours']) ){
-                $uploadFolder = $_SERVER['DOCUMENT_ROOT'].'/temp/pageLive/'.$_POST['idEpreuve'];
-                $jsFolder = '/temp/pageLive/'.$_POST['idEpreuve'];
+                $uploadFolder = $_SERVER['DOCUMENT_ROOT'].'/temp/leaflet/tmp/'.$_POST['idEpreuve'];
+                $uploadFolderGeojson = $_SERVER['DOCUMENT_ROOT'].'/temp/leaflet/geojson/'.$_POST['idEpreuve'];
+                $jsFolder = '/temp/leaflet/tmp/'.$_POST['idEpreuve'];
                 $idParcours = $_POST['idParcours'];
 
                 // Vérification de l'upload du fichier (id : trace)
@@ -21,6 +22,9 @@
                 } else {
                     echo "Erreur dans le téléchargement du fichier";
                 }
+
+                // Lecture du formulaire et mise en BDD + stockage dans variables
+                
             } else {
                 echo "Erreur dans l'envoi du formulaire";
             }
@@ -29,11 +33,16 @@
         <script>
                 // Récupération des variables
                 var file = "<?php echo $jsFolder.'/'.$filename; ?>";
-                var uploadFolder = "<?php echo "$uploadFolder".'/'; ?>";
+                var uploadFolder = "<?php echo "$uploadFolderGeojson".'/'; ?>";
                 var path = "<?php echo $jsFolder.'/';?>";
                 var type = "<?php echo "$type";?>";
                 var filename = "<?php echo $idParcours; ?>";
                 console.log('filename : '+filename);
+
+                var id =1234;
+                var name = "nomTest1234";
+                var distance = 145
+                var color = "purple";
 
                 // Variables de test d'extensions
                 var isGeojson = /geojson|json/.test(type.toLowerCase());
@@ -59,19 +68,56 @@
                         // Edition du fichier geojson
                         // FeatureCollection/features
                         // Feature/properties : shape(MultiLine), id, name, distance, color
-                        for (var key in data){
-                            console.log();
+                        for (var feature in data.features){
+                            // Traitement Trace
+                            if (data.features[feature].geometry.type == "MultiLineString"){
+                                var idIsSet = false, nameIsSet = false, distIsSet = false, colorIsSet = false;
+                                for (var property in data.features[feature].properties) {
+                                    // Vérification de l'existance des champs ; si oui : redéfinition
+                                    if (property == "id"){
+                                        idIsSet = true;
+                                        data.features[feature].properties[property] = id;
+                                    }
+                                    if (property == "name"){
+                                        nameIsSet = true;
+                                        data.features[feature].properties[property] = name;
+                                    }
+                                    if (property == "distance"){
+                                        distIsSet = true;
+                                        data.features[feature].properties[property] = distance;
+                                    }
+                                    if (property == "color"){
+                                        colorIsSet = true;
+                                        data.features[feature].properties[property] = color;
+                                    }
+                                    console.log("["+feature+"]"+"["+property+"]"+data.features[feature].properties[property]);
+                                }
+                                // Ajout des champs si non existants
+                                if (!idIsSet)
+                                    data.features[feature].properties["id"] = id;
+                                if (!nameIsSet)
+                                    data.features[feature].properties["name"] = name;
+                                if (!distIsSet)
+                                    data.features[feature].properties["distance"] = distance;
+                                if (!idIsSet)
+                                    data.features[feature].properties["color"] = color;
+
+                            }   
                         }
+
+                        console.log(data);
+
                         // Boucle pour chaque point
                         // Feature/properties : shape(Marker), name, category ; optionnel : distance, url, popupContent
                         
                         // Feature/geometry : type(poin), coordinates ([x.000, y.000, z])
+
+
                         // Enregistrement du fichier geojson
                         var fd = new FormData();
                         fd.append("json", JSON.stringify(data));
                         fd.append("filename", uploadFolder+filename+'.geojson');
                         fetch("/temp/ajax_geojson.php", {method:"POST", body:fd});
-                        console.log(data);
                     });
                 } else
                     alert("Format de fichier incorrect : "+type);
