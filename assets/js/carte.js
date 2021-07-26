@@ -1,5 +1,5 @@
 var plan, carte, baseMaps, scale;
-function initCarte() {
+async function initCarte() {
   //Récupération de l'idEpreuve
   var div = document.getElementById('idEpreuve');
   const idEpreuve = div.textContent;
@@ -108,27 +108,35 @@ function initCarte() {
                   offset: L.point(0, -20)
                 });
               }
-            }).addTo(carte);
+            });
             //Fin création de la couche i
-          }).then(function (parcoursCourant) {
             //La couche parcoursCourants permet d'adapter le zoom à tous les parcours au chargement de la carte mais n'est pas affiché sur la carte
             parcoursCourants.addLayer(dataGeojson[i]);
-            setTimeout(function () {
-              // Zoom sur les zones avec animation
-              carte.flyToBounds(parcoursCourants.getBounds());
-            }, 1000);
-          });
-        // Fin for
-      }
-      // Création bouton de gestion des couches
+          })
+      } // Fin for
       setTimeout(function () {
+        // Zoom sur les zones avec animation
+        carte.flyToBounds(parcoursCourants.getBounds(), {
+          duration: 4,
+          easeLinearity: 2
+        });
+      }, 1500);
+      return {
+        "nbCouches": nbCouches,
+        "dataGeojson": dataGeojson
+      };
+    })
+    .then(function(data) {
+      setTimeout(function () {
+      // Ajout des couches dans le panneau latéral et affichage des parcours sur la carte après l'animation
         var parcours = {
         };
-        for (let i = 0; i < nbCouches; i++) {
-          parcours[noms[i]] = dataGeojson[i];
+        for (let i = 0; i < data.nbCouches; i++) {
+          parcours[noms[i]] = data.dataGeojson[i];
+          data.dataGeojson[i].addTo(carte);
         }
         L.control.layers(baseMaps, parcours).addTo(carte);
-      }, 2000);
+      }, 5000);
     });
 }
 

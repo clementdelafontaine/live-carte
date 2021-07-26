@@ -6,7 +6,7 @@
             "id": 17568,
             "name": "La Cycl Roquefort",
             "distance": 145,
-            "color": "red"
+            "color": "#639EAA"
         },
         "geometry": {
             "type": "MultiLineString",

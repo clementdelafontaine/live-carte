@@ -1,13 +1,16 @@
 [
     {
+        "id": 17568,
         "nom": "La Cycl'Roquefort",
         "url": "leaflet/geojson/7232/17568.geojson"
     },
     {
+        "id": 17569,
         "nom": "La Cardabelle",
         "url": "leaflet/geojson/7232/17569.geojson"
     },
     {
+        "id": 17726,
         "nom": "La Rando",
         "url": "leaflet/geojson/7232/17726.geojson"
     }

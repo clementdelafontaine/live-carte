@@ -1,5 +1,5 @@
 <?php
-$siteInclude = $_SERVER['DOCUMENT_ROOT'].'/temp/';//"https://www.ats-sport.com/temp/";
+$siteInclude = $_SERVER['DOCUMENT_ROOT'].'/temp/';
 $site = '/temp/';
 
 require_once($siteInclude.'includes/includes.php');
