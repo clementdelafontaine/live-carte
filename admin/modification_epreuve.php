@@ -670,6 +670,7 @@ function tarif_reduc_place($id_tarif)
 																				$td_content .=		'<textarea class="form-control" name="popupContent_'.$id_parcours.'_'.$id.'" placeholder="Message à afficher dans la popup du point">'.$row['popupContent'].'</textarea>';
 																				$td_content .=	'</td>';
 																				$td_content .=	'<td style="text-align: center"><a class="btn btn-danger btn-xs bouton_suppression_point"><i class="fa fa-2x fa-trash-o bouton_suppression_point"></i></a></td>';
+																				$td_content .=	'<input type="hidden" name="id_'.$id_epr.'_'.$id_parcours.'_'.$id.'" value="'.$id_epr.'_'.$id_parcours.'_'.$id.'">';
 																				$td_content .= '</tr>';
 
 																				echo $td_content;
@@ -843,6 +844,8 @@ function tarif_reduc_place($id_tarif)
 			} else {
 				var id = 1;
 			}
+
+			const id_epreuve = <?php echo $_GET['epre_id'] ?>;
 			const category = document.getElementById("td_category_0").value;
 			const distance_depart = document.getElementById("td_distance_depart_0").value;
 			const popupContent = document.getElementById("td_popupContent_0").innerHTML;
@@ -865,7 +868,8 @@ function tarif_reduc_place($id_tarif)
 					<td>
 						<textarea id="td_popupContent" class="form-control" placeholder="${popupContent}"></textarea>
 					</td>
-					<td><a class="btn btn-danger btn-xs bouton_suppression_point"><i class="fa fa-2x fa-trash-o bouton_suppression_point"></i></a></td>													
+					<td style="text-align: center"><a class="btn btn-danger btn-xs"><i class="fa fa-2x fa-trash-o bouton_suppression_point"></i></a></td>	
+					<input type="hidden" name="id_${id_epr}_${id_parcours}_${id}" value=${id_epr}_${id_parcours}_${id}">											
 				</tr>
 			`);
 
@@ -879,8 +883,28 @@ function tarif_reduc_place($id_tarif)
 			if (!btn.classList.contains('bouton_suppression_point')) {
 				return;
 			}
-
-			btn.closest('tr').remove();
+			var verification = confirm("Êtes vous sûr de vouloir supprimer ce point ?");
+			if (verification){
+				console.log('btn : '+btn.parentElement.parentElement.nextSibling.value);
+				var ids = btn.parentElement.parentElement.nextSibling.value.split('_');
+				console.log('btn : '+btn.parentElement.parentElement.nextSibling.value+' id : '+ids[2]+' id_parcours : '+ids[1]+' id_epreuve '+ids[0])
+				$.ajax({
+					url:"ajax_remove_carto.php",
+					type:'POST',
+					data:{
+						id_epreuve:ids[0],
+						id_parcours:ids[1],
+						id:ids[2]
+					},
+					success:function(reponse) {
+						if(reponse==1){
+							btn.closest('tr').remove();
+						} else {
+						alert('id invalides');
+						}
+					}
+				});
+			}
 		}
 
 		function countRows() {
