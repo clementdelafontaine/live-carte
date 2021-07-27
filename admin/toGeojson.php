@@ -1,6 +1,10 @@
 <html>
     <body>
         <?php
+            session_start();
+            require_once('includes/connect_db.php');
+            connect_db();
+
              if($_SERVER["REQUEST_METHOD"] == 'POST' && isset($_POST['idEpreuve']) && isset($_POST['idParcours']) ){
                 $uploadFolder = $_SERVER['DOCUMENT_ROOT'].'/temp/leaflet/tmp/'.$_POST['idEpreuve'];
                 $uploadFolderGeojson = $_SERVER['DOCUMENT_ROOT'].'/temp/leaflet/geojson/'.$_POST['idEpreuve'];
@@ -42,7 +46,7 @@
                     $name = $_POST['name_parcours_1'];
             
                 // Mise en BDD
-                
+                // " REPLACE INTO c_carto_points_interet "
             } else {
                 echo "Erreur dans l'envoi du formulaire";
             }

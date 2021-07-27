@@ -319,6 +319,27 @@ function tarif_reduc_place($id_tarif)
 			$f->idEpreuve = '';
 			$f->repertoire_docs = 'fichiers_epreuves/';
 
+			//Clément
+			//Query points d'intérêt carte
+			if (isset($_GET['epre_id'])) {
+				$epre_id = $_GET['epre_id'];
+				$query = "SELECT * FROM c_carto_points_interet";
+				$query .= " ORDER BY id_epreuve, id_parcours";
+				$result = $mysqli->query($query);
+				array_push($p->query, (($result != FALSE) ? "ok" : "er") . " : " . $query);
+				while (($row = mysqli_fetch_array($result)) != FALSE) {
+					$infos_points[$row['id_epreuve']][$row['id_parcours']][$row['id']] = 
+						array(
+							'categorie' => $row['categorie'], 
+							'id_lecteur' => $row['id_lecteur'], 
+							'popupContent' => $row['popupContent'], 
+							'x' => $row['x'], 
+							'y' => $row['y'], 
+							'z' => $row['z']);
+				
+				}
+			}
+			
 			//JEFF
 			//MODIFICATION
 			if (isset($_POST['epre_id']) || isset($_GET['epre_id'])) {
@@ -541,6 +562,7 @@ function tarif_reduc_place($id_tarif)
 													</ul>
 												</div>
 											</div>
+											<!-- Début formulaire -->
 											<div class="tab-content" id="divTab">
 												<div class="tab-pane fade active in" id="parcours_1">
 													<input type="hidden" id="id_table_parcours_1" name="id_table_parcours_1" value="<?php if (isset($tab_id[1][0])) echo $tab_id[1][0]; ?>" />
@@ -550,7 +572,7 @@ function tarif_reduc_place($id_tarif)
 															<div class="col-md-4">
 																<div class="form-group m-r-20 input-group-lg">
 																	<h4>Nom de la course*</h4>
-																	<input type="text" name="name_parcours_1" id="name_parcours_1" value="<?php if ($f->parc_nom[1] != '') echo $f->parc_nom[1];
+																	<input type="text" name="name_parcours_<?php if (isset($tab_id[1][0])) echo $tab_id[1][0]; ?>" value="<?php if ($f->parc_nom[1] != '') echo $f->parc_nom[1];
 																																			else echo "Mon premier parcours"; ?>" placeholder="Nom du parcours" class="form-control input-group-lg" data-parsley-group="wizard-step-1" onchange="$('a#name_parcours_1').text(this.value);" required />
 
 																</div>
@@ -558,7 +580,7 @@ function tarif_reduc_place($id_tarif)
 															<div class="col-md-2">
 																<div class="form-group m-r-20 input-group-lg">
 																	<h4>Ordre d'affichage</h4>
-																	<input type="text" name="epre_parc_ordre[1]" id="epre_parc_ordre1" value="<?php if ($f->parc_ordre[1] != '') echo $f->parc_ordre[1];
+																	<input type="text" name="epre_parc_ordre_<?php if (isset($tab_id[1][0])) echo $tab_id[1][0]; ?>" value="<?php if ($f->parc_ordre[1] != '') echo $f->parc_ordre[1];
 																																				else echo "1"; ?>" class="form-control input-group-lg" data-parsley-group="wizard-step-1" required />
 																</div>
 															</div>
@@ -575,13 +597,13 @@ function tarif_reduc_place($id_tarif)
 															<div class="col-md-5">
 																<div class="form-group m-r-20 input-group-lg">
 																	<h4>Télécharger le parcours (geojson, gpx, kml)</h4>
-																	<input type="file" id="trace" name="trace" accept=".kml,.geojson,.json,.gpx" data-parsley-group="wizard-step-1">
+																	<input type="file" id="trace" name="trace_<?php if (isset($tab_id[1][0])) echo $tab_id[1][0]; ?>" accept=".kml,.geojson,.json,.gpx" data-parsley-group="wizard-step-1">
 																</div>
 															</div>
 															<div class="col-md-2">
 																<div class="form-group m-r-20 input-group-lg">
 																	<h4>Couleur</h4>
-																	<select name="color_trace" class="form-select form-select-lg mb-3" aria-label=".form-select-lg">
+																	<select name="color_trace_<?php if (isset($tab_id[1][0])) echo $tab_id[1][0]; ?>" class="form-select form-select-lg mb-3" aria-label=".form-select-lg">
 																		<!-- <option selected="yes"></option> TODO à mettre sur la couleur en BDD -->
 																		<option value="#B52038">Rouge</option>
 																		<option value="#C0DBD5">Vert</option>
@@ -596,13 +618,13 @@ function tarif_reduc_place($id_tarif)
 															<div class="col-md-1">
 																<div class="form-group m-r-20 input-group-lg">
 																	<h4>Distance</h4>
-																	<input type="text" name="distance" value="<?php if ($tab_distance_parcours[1][0]  != '') echo $tab_distance_parcours[1][0];
+																	<input type="text" name="distance_<?php if (isset($tab_id[1][0])) echo $tab_id[1][0]; ?>" value="<?php if ($tab_distance_parcours[1][0]  != '') echo $tab_distance_parcours[1][0];
 																												else echo "0"; ?>" class="form-control input-group-lg" data-parsley-group="wizard-step-1" required />
 																</div>
 															</div>
 														</div>
 
-													</fieldset> <!-- Fin Points d'intérêt -->
+													</fieldset> <!-- Début Points d'intérêt -->
 													<fieldset>
 														<legend>Points d'intérêt de la course</legend>
 
@@ -618,32 +640,45 @@ function tarif_reduc_place($id_tarif)
 																			<th class="text-center">Modifier</th>
 																		</tr>
 																	</thead>
-																	<tbody>
-																		<tr id="tr_<?php if (isset($tab_id[1][0])) echo $tab_id[1][0]; ?>">
-																			<td>
-																				<h4><?php if (isset($tab_id[1][0])) echo $tab_id[1][0]; ?></h4>
-																			</td> <!-- id du point -->
-																			<td>
-																				<select name="category" class="form-select form-select-lg mb-3" style="max-width:90%;" aria-label=".form-select-lg" data-parsley-group="wizard-step-1">
-																					<!-- <option selected="yes"></option> TODO à mettre sur la couleur en BDD -->
-																					<option value="Départ">Départ</option>
-																					<option value="Arrivée">Arrivée</option>
-																					<option value="Départ/Arrivée">Départ/Arrivée</option>
-																					<option value="Ravitaillement">Ravitaillement</option>
-																					<option value="Point intermédiaire">Point intermédiaire</option>
-																				</select>
-																			</td>
-																			<td>
-																				<input type="text" name="dist_point" class="form-control input-group-lg" data-parsley-group="wizard-step-1" required>
-																			</td>
-																			<td>
-																				<textarea class="form-control" placeholder="Message à afficher dans la popup du point"></textarea>
-																			</td>
-																			<td></td>
-																		</tr>
+																	<tbody id="tbody_point">
+																	<!-- Début table rows -->
+																	<?php 
+																		if(isset($_GET['epre_id'])){
+																			$id_epr = $_GET['epre_id'];
+																			$id_parcours = $tab_id[1][0];
+																			$id = 0;
+																			foreach($infos_points[$id_epr][$id_parcours] as $row) {
+																				$id++;
+																				$td_content = '<tr id="tr_'.$id_epr.'">';
+																				$td_content .=	'<td>';
+																				$td_content .= 		'<h4>'.$id.'</h4>';
+																				$td_content .= 		'<input type="hidden" name="id_'.$id_parcours.'_'.$id.'" value="'.$id.'">';
+																				$td_content .=	'</td> <!-- id du point -->';
+																				$td_content .=	'<td>';
+																				$td_content .=		'<select name="category_'.$id_parcours.'_'.$id.'" class="form-select form-select-lg mb-3" style="max-width:90%;" aria-label=".form-select-lg" data-parsley-group="wizard-step-1">';
+																				$td_content .=			'<option value="Départ" '.(($row['categorie']=="Départ") ? "selected" : "").'>Départ</option>';
+																				$td_content .=			'<option value="Arrivée" '.(($row['categorie']=="Arrivée") ? "selected" : "").'>Arrivée</option>';
+																				$td_content .=			'<option value="Départ/Arrivée"  '.(($row['categorie']=="Départ/Arrivée") ? "selected" : "").'>Départ/Arrivée</option>';
+																				$td_content .=			'<option value="Ravitaillement"  '.(($row['categorie']=="Ravitaillement") ? "selected" : "").'>Ravitaillement</option>';
+																				$td_content .=			'<option value="Point intermédiaire"  '.(($row['categorie']=="Point intermédiaire") ? "selected" : "").'>Point intermédiaire</option>';
+																				$td_content .=		'</select>';
+																				$td_content .=	'</td>';
+																				$td_content .=	'<td>';
+																				$td_content .=		'<input type="text" name="dist_point_'.$id_parcours.'_'.$id.'" value="['.$row['x'].','.$row['y'].','.$row['z'].']" class="form-control input-group-lg" data-parsley-group="wizard-step-1" required>';
+																				$td_content .=	'</td>';
+																				$td_content .=	'<td>';
+																				$td_content .=		'<textarea class="form-control" name="popupContent_'.$id_parcours.'_'.$id.'" placeholder="Message à afficher dans la popup du point">'.$row['popupContent'].'</textarea>';
+																				$td_content .=	'</td>';
+																				$td_content .=	'<td style="text-align: center"><a class="btn btn-danger btn-xs bouton_suppression_point"><i class="fa fa-2x fa-trash-o bouton_suppression_point"></i></a></td>';
+																				$td_content .= '</tr>';
+
+																				echo $td_content;
+																			}
+																		}
+																	?>
+																	<!-- Ajout d'un point -->
 																		<tr id="tr_0">
 																			<td id="td_id_0">
-																				<h4><?php if (isset($tab_id[1][0])) echo $tab_id[1][0]; ?></h4>
 																			</td> <!-- id du point -->
 																			<td>
 																				<select id="td_category_0" name="category" class="form-select form-select-lg mb-3" style="max-width:90%;" aria-label=".form-select-lg" data-parsley-group="wizard-step-1">
@@ -661,7 +696,7 @@ function tarif_reduc_place($id_tarif)
 																			<td>
 																				<textarea id="td_popupContent_0" class="form-control" placeholder="Message à afficher dans la popup du point"></textarea>
 																			</td>
-																			<td><a id="bouton_ajout_point" class="btn btn-success btn-xs" data-original-title="Ajouter un point"><i class="fa fa-2x fa-plus-circle"></i></a></td>
+																			<td style="text-align: center"><a id="bouton_ajout_point" class="btn btn-success btn-xs" data-original-title="Ajouter un point"><i class="fa fa-2x fa-plus-circle"></i></a></td>
 																		</tr>
 																	</tbody>
 																</table>
@@ -798,15 +833,21 @@ function tarif_reduc_place($id_tarif)
 		});
 
 		// Script ajout de point
-		const tbodyEl = document.querySelector("tbody");
+		const tbodyEl = document.getElementById("tbody_point");
 		const tableEl = document.getElementById("table_point");
 
 		function ajouterPoint(e) {
-			const id = document.getElementById("td_id_0").innerHTML;
+			// S'il y a déjà une ligne récupérer l'id du dernier point sinon partir de 1
+			if (countRows() >= 1) {
+				var id = parseInt(document.getElementById("tr_0").previousElementSibling.querySelector("td").querySelector("h4").innerHTML) + 1;
+			} else {
+				var id = 1;
+			}
 			const category = document.getElementById("td_category_0").value;
-			const distance_depart = document / getElementById("td_distance_depart_0").value;
-			const popupContent = document.getElementById("td_popupContent_0").value;
-			tbodyEl.innerHTML += `
+			const distance_depart = document.getElementById("td_distance_depart_0").value;
+			const popupContent = document.getElementById("td_popupContent_0").innerHTML;
+
+			document.getElementById("tr_0").insertAdjacentHTML('beforebegin', `
 				<tr id="tr_${id}">
 					<td id="td_id_${id}"><h4>${id}</h4></td>
 					<td>
@@ -822,26 +863,32 @@ function tarif_reduc_place($id_tarif)
 						<input id="td_distance_depart_${id}" type="text" name="distance_depart" class="form-control input-group-lg" data-parsley-group="wizard-step-1" required value="${popupContent}">
 					</td>
 					<td>
-						<textarea id="td_popupContent" class="form-control" placeholder="Message à afficher dans la popup du point"></textarea>
+						<textarea id="td_popupContent" class="form-control" placeholder="${popupContent}"></textarea>
 					</td>
-					<td><a class="btn btn-danger btn-xs bouton_suppression_point" onclick="bouton_supprimer_point()"><i class="fa fa-2x fa-trash-o"></i></a></td>													
+					<td><a class="btn btn-danger btn-xs bouton_suppression_point"><i class="fa fa-2x fa-trash-o bouton_suppression_point"></i></a></td>													
 				</tr>
-			`;
+			`);
 
 			document.getElementById(`td_category_${id}`).value = category;
+
+			//Effacer le contenu de la ligne d'insertion
 		}
 
-		function onDeleteRow(e){
+		function onDeleteRow(e) {
 			const btn = e.target;
-			if (!btn.classList.contains('bouton_suppression_point')){
+			if (!btn.classList.contains('bouton_suppression_point')) {
 				return;
 			}
 
 			btn.closest('tr').remove();
 		}
 
+		function countRows() {
+			return tableEl.rows.length - 2;
+		}
+
 		tableEl.addEventListener('click', onDeleteRow);
-		document.getElementById("bouton_ajout_point").addEventListener("click", ajouterPoint);
+		document.getElementById("bouton_ajout_point").addEventListener('click', ajouterPoint);
 	</script>
 
 
