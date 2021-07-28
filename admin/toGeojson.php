@@ -10,7 +10,8 @@
                 $uploadFolderGeojson = $_SERVER['DOCUMENT_ROOT'].'/temp/leaflet/geojson/'.$_POST['idEpreuve'];
                 $jsFolderTmp = '/temp/leaflet/tmp/'.$_POST['idEpreuve'];
                 $jsFolderId = '/temp/leaflet/geojson/'.$_POST['idEpreuve'];
-                $idParcours = $_POST['id_table_parcours_1'];
+                $idEpreuve = $_POST['idEpreuve'];
+                $idParcours = $_POST['idParcours'];
 
                 // Vérification de l'upload du fichier (id : trace)
                 if(isset($_FILES['trace']) && $_FILES['trace']['error'] == 0){
@@ -19,11 +20,13 @@
                     $type = pathinfo($filename, PATHINFO_EXTENSION);
                     echo "filename : ".$filename." | type : ".$type." | idParcours : ".$idParcours;
                     // Vérification de l'existence du dossier de téléchargement et création si non existant
-                    if (!is_dir($uploadFolder)){
+                    if (!is_dir($uploadFolder))
                         mkdir($uploadFolder);
-                    }
                     if(!move_uploaded_file($_FILES['trace']['tmp_name'], $uploadFolder.'/'.$filename))
                         echo "Erreur dans le téléchargement de ".$filename;
+                        exit;
+                    if($filename != "")
+                        echo "<script type='text/javascript'>processFile();</script>";
                 } else {
                     echo "Erreur dans le téléchargement du fichier";
                 }
@@ -36,14 +39,36 @@
                 }
 
                 // Lecture du formulaire
-                echo '<br> color : '.$_POST["color_trace"].' | distance : '.$_POST["distance"].' | nom :'. $_POST["name_parcours_1"];
+                echo '<br> color : '.$_POST["color_trace"].' | distance : '.$_POST["distance"].' | nom :'. $_POST["name_parcours"];
                 if(isset($_POST['color_trace'])){
                     $color = $_POST['color_trace'];
                 }
                 if(isset($_POST['distance']))
                     $distance = $_POST['distance'];
-                if(isset($_POST['name_parcours_1']))
-                    $name = $_POST['name_parcours_1'];
+                if(isset($_POST['name_parcours']))
+                    $name = $_POST['name_parcours'];
+
+                // Récupération du tableau
+                $id_point = array();
+                $category = array();
+                $dist_point = array();
+                $popupContent = array();
+                $i = 0;
+                if(isset($_POST['id_point'])){
+                    foreach($_POST['id_point'] as $row){
+                        $id_point[$i] = $row;
+
+                        if(isset($_POST['category_'.$row]))
+                            $category[$row] = $_POST['category_'.$row];
+                        if(isset($_POST['distance_depart_'.$row]))
+                            $dist_point[$row] = $_POST['distance_depart_'.$row];
+                        if(isset($_POST['popupContent_'.$row]))
+                            $popupContent[$row] = $_POST['popupContent_'.$row];
+                        $i++;
+                    }
+                }
+
+                var_dump($id_point);var_dump($category);var_dump($dist_point);var_dump($popupContent);
             
                 // Mise en BDD
                 // " REPLACE INTO c_carto_points_interet "
@@ -53,6 +78,7 @@
         ?>
 
         <script>
+            function processFile() {
                 // Récupération des variables
                 var file = "<?php echo $jsFolderTmp.'/'.$filename; ?>";
                 var uploadFolder = "<?php echo "$uploadFolderGeojson".'/'; ?>";
@@ -190,6 +216,7 @@
                     });
                 } else
                     alert("Format de fichier incorrect : "+type);
+            }
 
         </script>
 
