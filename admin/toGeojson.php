@@ -41,7 +41,7 @@
         }
 
         // Lecture du formulaire
-        echo '<br> color : ' . $_POST["color_trace"] . ' | distance : ' . $_POST["distance"] . ' | nom :' . $_POST["name_parcours"];
+        echo '<br> color : ' . $_POST["color_trace"] . ' | distance : ' . $_POST["distance"] . ' | nom :' . $_POST["name_parcours"].'<br>';
         if (isset($_POST['color_trace']))
             $couleur = $_POST['color_trace'];
         else
@@ -70,13 +70,13 @@
                     if (isset($_POST['distance_depart_' . $row]))
                         $coord_dist_point[$row] = $_POST['distance_depart_' . $row];
                     if (isset($_POST['popupContent_' . $row]))
-                        $popupContent[$row] = htmlspecialchars($_POST['popupContent_' . $row]);
+                        $popupContent[$row] = (($_POST['popupContent_' . $row] != null) ? $_POST['popupContent_' . $row] : "NULL" );
                     else
-                        $popupContent[$row] = "";
+                        $popupContent[$row] = "NULL";
                     if (isset($_POST['id_lecteur_' . $row]))
-                        $idLecteur[$row] = $_POST['id_lecteur_' . $row];
+                        $idLecteur[$row] = (($_POST['id_lecteur_' . $row] != null) ? $_POST['id_lecteur_' . $row] : "" );
                     else
-                        $idLecteur[$row] = "NULL";
+                        $idLecteur[$row] = "";
                     $i++;
                 }
             }
@@ -96,12 +96,12 @@
             foreach($id_point as $id){
                 if($id != "undefined"){
                     $xyz = explode(",", $coord_dist_point[$id]);
-                    $x = $xyz[0];
-                    $y = $xyz[1];
-                    $z = $xyz[2];
-                    echo "x : $x, y : $y, z : $z";
+                    $x = (($xyz[0] != null) ? $xyz[0] : 0.0);
+                    $y = (($xyz[1] != null) ? $xyz[1] : 0.0);
+                    $z = (($xyz[2] != null) ? $xyz[2] : 0.0);
+
                     $query = "INSERT INTO c_carto_points_interet VALUES (".$idEpreuve.", ".$idParcours.", ".$id.", '".$category[$id]."','".$popupContent[$id]."' ,".$idLecteur[$id]." ,".$x." ,".$y." ,".$z.")";
-                    $query .= " ON DUPLICATE KEY UPDATE categorie='".$category[$id]."', popupContent='".$popupContent[$id]."', id_lecteur=".$idLecteur[$id].", x=".$x.", y=".$y.", z=".$z;
+                    $query .= " ON DUPLICATE KEY UPDATE categorie=' ".$category[$id]." ', popupContent=' ".$popupContent[$id]." ', id_lecteur=".$idLecteur[$id].", x=".$x.", y=".$y.", z=".$z;
                     echo " | ".$query;
                     $result = $mysqli->query($query);
                 }
@@ -120,13 +120,17 @@
 
     <script>
         function processFile() {
-            function setupVariables(){
             // Récupération des variables
             // Chemins d'enregistrement
             var uploadFolder = "<?php echo "$uploadFolderGeojson" . '/'; ?>";
             var path = "<?php echo $jsFolderTmp . '/'; ?>";
             var pathId = "<?php echo $jsFolderId . '/'; ?>";
-            alert(uploadFolder);
+
+            var idParcours = "<?php echo $idParcours; ?>";
+            var name = "<?php echo $name; ?>";
+            var distance = <?php echo $distance; ?>;
+            var color = "<?php echo $couleur; ?>";
+
             // Trace
             var fichierCharge = <?php echo ((isset($fichierCharge) ? "true" : "false")) ?>;
             if (fichierCharge) {
@@ -138,15 +142,11 @@
                 isGpxKml = /gpx|kml/.test(type.toLowerCase());
             } else {
                 var type = null;
+                var file = uploadFolder+idParcours+'.gejson';
                 <?php $fonctionConversion = "doNothing"; ?>;
                 var isGeojson = false;
                 var isGpxKml = false;
             }
-
-            var idParcours = "<?php echo $idParcours; ?>";
-            var name = "<?php echo $name; ?>";
-            var distance = <?php echo $distance; ?>;
-            var color = "<?php echo $couleur; ?>";
 
             // Points d'intérêt
             var id_point = <?php echo ((isset($id_point)) ?  json_encode(($id_point)) : ""); ?>;
@@ -157,43 +157,76 @@
             console.log('idParcours : ' + idParcours);
             id_point.forEach(function(id) {
                 console.log("id_point : " + id + " | category : " + category[id] + " | coord : " + coord_dist_point[id] + " | popupContent : " + popupContent[id]);
-            });
+            
 
             // #TODO Passer de distance à coordonnées si nécessaire
 
 
             console.log("isGeojson : " + isGeojson + " | iskmlgpx : " + isGpxKml);
-            return new Promise(function(resolve, reject){});
+            // return new Promise(function(resolve, reject){});
             }
-            setupVariables().then( function() {
-            if (isGeojson || isGpxKml) {
-                fetch(file)
-                    .then(function(response) {
-                        console.log(response);
-                        if (isGeojson)
-                            return response.json();
-                        else if (isGpxKml)
-                            return response.text();
-                    })
-                    .then(function(data) {
-                        if (isGeojson)
-                            return data;
-                        else if (isGpxKml) {
-                            // Création du geoJSON en fonction du type (kml ou gpx)
-                            var newGeoJSON = toGeoJSON.<?php echo $fonctionConversion ?>(new DOMParser().parseFromString(data, "text/xml"));
-                            return newGeoJSON;
-                        }
-                    }).then(function(data) {
-                        editionGeojson(data);
+
+            // setupVariables().then( function() {
+                alert(isGeojson+isGpxKml);
+                if (isGeojson || isGpxKml) {
+                    fetch(file)
+                        .then(function(response) {
+                            console.log(response);
+                            if (isGeojson)
+                                return response.json();
+                            else if (isGpxKml)
+                                return response.text();
+                        })
+                        .then(function(data) {
+                            if (isGeojson)
+                                return data;
+                            else if (isGpxKml) {
+                                // Création du geoJSON en fonction du type (kml ou gpx)
+                                var newGeoJSON = toGeoJSON.<?php echo $fonctionConversion ?>(new DOMParser().parseFromString(data, "text/xml"));
+                                return newGeoJSON;
+                            }
+                        }).then(function(data) {
+                            editionGeojson(data);
+                        });
+                } else { // Pas de fichier ou mauvais format
+                    console.log("Format de fichier incorrect : " + type);
+                    // On vérifie si un fichier existe, si oui on récupère la trace et dans tous les cas on concatène les points
+                    fetch(file).then(data => {
+                        editionGeojson(copyTrace(data.json()));
+                    }).catch(err => {
+                        var newGeoJSON = {
+                            "type": "FeatureCollection",
+                            "features": [{}]
+                        };
+                        editionGeojson(newGeoJSON);
                     });
-            } else {
-                console.log("Format de fichier incorrect : " + type);
-                var newGeoJSON = {
-                    "type": "FeatureCollection",
-                    "features": [{}]
-                };
-                editionGeojson(newGeoJSON);
-            }})
+                }
+            // });
+        }
+
+        function copyTrace(data){
+            var newGeoJSON = {
+                "type": "FeatureCollection",
+                "features": [{
+                    "type": "Feature",
+                    "properties": {
+                    },
+                    "geometry": {
+                        "type": "",
+                        "coordinates": []
+                    }
+                }]
+            };
+            for (var feature in data.features) {
+                if(data.features[feature].geometry != undefined){
+                    if (data.features[feature].geometry.type == "MultiLineString") {
+                        newGeoJSON.features.geometry.type = "MultiLineString";
+                        newGeoJSON.features.geometry.coordinates = data.features[feature].geometry.coordinates;
+                        return newGeoJSON;
+                    }
+                }
+            }
+            return null;
         }
 
         function editionGeojson(data) {
@@ -284,6 +317,8 @@
             }
             console.log(data);
 
+
+            processFile();            
             // Enregistrement du fichier geojson
             var fd = new FormData();
             fd.append("json", JSON.stringify(data));
@@ -308,8 +343,6 @@
                     }
                 });
         }
-
-        processFile();
     </script>
 
     <!-- ================== BEGIN BASE JS ================== -->
