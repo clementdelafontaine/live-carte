@@ -339,6 +339,19 @@ function tarif_reduc_place($id_tarif)
 							'z' => $row['z']
 						);
 				}
+
+				$query = "SELECT * FROM c_gpx";
+				$query .= " ORDER BY id_epreuve, id_parcours";
+				$result = $mysqli->query($query);
+				array_push($p->query, (($result != FALSE) ? "ok" : "er") . " : " . $query);
+				while (($row = mysqli_fetch_array($result)) != FALSE) {
+					$infos_trace[$row['id_epreuve']][$row['id_parcours']] =
+						array(
+							'couleur' => $row['couleur'],
+							'distance' => $row['distance']
+						);
+				}
+				var_dump($infos_trace['7232']['17568']);
 			}
 
 			//JEFF
@@ -559,7 +572,7 @@ function tarif_reduc_place($id_tarif)
 											<form action="toGeojson.php" method="POST" data-parsley-validate="true" name="form-wizard" class="form-horizontal" id="formGeo" enctype="multipart/form-data">
 											<?php } ?>
 											<input type="hidden" name="idEpreuve" value="<?php echo $_GET['epre_id']; ?>">
-											<input type="hidden" name="idParcours" value="<?php echo $tab_id[$j][0]; ?>">
+											<input type="hidden" name="idParcours" value="<?php echo $tab_id[1][0]; ?>">
 
 											<div class="tab-content" id="divTab">
 												<div class="tab-pane fade active in" id="parcours_1">
@@ -570,7 +583,7 @@ function tarif_reduc_place($id_tarif)
 																<div class="form-group m-r-20 input-group-lg">
 																	<h4>Nom de la course*</h4>
 																	<input type="text" name="name_parcours" value="<?php if ($f->parc_nom[1] != '') echo $f->parc_nom[1];
-																																											else echo "Mon premier parcours"; ?>" placeholder="Nom du parcours" class="form-control input-group-lg" data-parsley-group="wizard-step-1" onchange="$('a#name_parcours_1').text(this.value);" required />
+																													else echo "Mon premier parcours"; ?>" placeholder="Nom du parcours" class="form-control input-group-lg" data-parsley-group="wizard-step-1" onchange="$('a#name_parcours_1').text(this.value);" required />
 
 																</div>
 															</div>
@@ -592,27 +605,40 @@ function tarif_reduc_place($id_tarif)
 															</div>
 															<div class="col-md-2">
 																<div class="form-group m-r-20 input-group-lg">
-																	<h4>Couleur</h4>
-																	<select name="color_trace" class="form-select form-select-lg mb-3" aria-label=".form-select-lg">
-																		<!-- <option selected="yes"></option> TODO à mettre sur la couleur en BDD -->
-																		<option value="#B52038">Rouge</option>
-																		<option value="#C0DBD5">Vert</option>
-																		<option value="#406D94">Bleu</option>
-																		<option value="#8D2D54">Bordeau</option>
-																		<option value="#B5B2D0">Violet</option>
-																		<option value="#EECCA5">Jaune</option>
-																		<option value="#D28271">Orange</option>
-																	</select>
+																	<?php if (isset($_GET['epre_id'])) {
+																		$id_epr = $_GET['epre_id'];
+																		$id_parcours = $tab_id[1][0];
+																		if (isset($infos_trace["$id_epr"]["$id_parcours"]["couleur"]))
+																			$couleur = $infos_trace["$id_epr"]["$id_parcours"]["couleur"];
+																		else
+																			$couleur = "#B52038";
+																		if (isset($infos_trace["$id_epr"]["$id_parcours"]["distance"]))
+																			$distance = $infos_trace["$id_epr"]["$id_parcours"]["distance"];
+																		else
+																			$distance = 0;
+
+																		$epContent = 		'<h4>Couleur</h4>';
+																		$epContent .= 			'<select name="color_trace" class="form-select form-select-lg mb-3" aria-label=".form-select-lg">';
+																		$epContent .= 				'<option value="#B52038" ' . (($couleur == "#B52038") ? "selected" : "") . '>Rouge</option>';
+																		$epContent .= 				'<option value="#C0DBD5" ' . (($couleur == "#C0DBD5") ? "selected" : "") . '>Vert</option>';
+																		$epContent .= 				'<option value="#406D94" ' . (($couleur == "#406D94") ? "selected" : "") . '>Bleu</option>';
+																		$epContent .= 				'<option value="#8D2D54" ' . (($couleur == "#8D2D54") ? "selected" : "") . '>Bordeau</option>';
+																		$epContent .= 				'<option value="#B5B2D0" ' . (($couleur == "#B5B2D0") ? "selected" : "") . '>Violet</option>';
+																		$epContent .= 				'<option value="#EECCA5" ' . (($couleur == "#EECCA5") ? "selected" : "") . '>Jaune</option>';
+																		$epContent .= 				'<option value="#D28271" ' . (($couleur == "#D28271") ? "selected" : "") . '>Orange</option>';
+																		$epContent .= 			'</select>';
+																		$epContent .= 		'	</div>';
+																		$epContent .= 	'</div>';
+																		$epContent .= '<div class="col-md-1">';
+																		$epContent .= 	'<div class="form-group m-r-20 input-group-lg">';
+																		$epContent .= 		'<h4>Distance</h4>';
+																		$epContent .= 			'<input type="text" name="distance" value="' . $distance . '" class="form-control input-group-lg" data-parsley-group="wizard-step-1" required />';
+																		$epContent .=	'</div>';
+																		$epContent .= '</div>';
+
+																		echo $epContent;
+																	} ?>
 																</div>
-															</div>
-															<div class="col-md-1">
-																<div class="form-group m-r-20 input-group-lg">
-																	<h4>Distance</h4>
-																	<input type="text" name="distance" value="<?php if ($tab_distance_parcours[1][0]  != '') echo $tab_distance_parcours[1][0];
-																																										else echo "0"; ?>" class="form-control input-group-lg" data-parsley-group="wizard-step-1" required />
-																</div>
-															</div>
-														</div>
 
 													</fieldset> <!-- Début Points d'intérêt -->
 													<fieldset>
@@ -625,8 +651,9 @@ function tarif_reduc_place($id_tarif)
 																		<tr>
 																			<th>#</th>
 																			<th class="text-center">Catégorie</th>
-																			<th class="text-center">Coordonnées/Distance du départ</th>
+																			<th class="text-center">Coordonnées</th>
 																			<th class="text-center">Commentaire</th>
+																			<th class="text-center">id_lecteur</th>
 																			<th class="text-center">Modifier</th>
 																		</tr>
 																	</thead>
@@ -657,9 +684,12 @@ function tarif_reduc_place($id_tarif)
 																				$td_content .=	'<td>';
 																				$td_content .=		'<input type="text" name="popupContent_' . $row['id'] . '" class="form-control input-group-lg" data-parsley-group="wizard-step-1" value="' . $row['popupContent'] . '">';
 																				$td_content .=	'</td>';
+																				$td_content .=	'<td>';
+																				$td_content .=		'<input type="text" name="id_lecteur_' . $row['id'] . '" class="form-control input-group-lg" data-parsley-group="wizard-step-1" value="' . $row['id_lecteur'] . '">';
+																				$td_content .=	'</td>';
 																				$td_content .=	'<td style="text-align: center">';
 																				$td_content .=	'<input type="hidden" name="id_' . $id_epr . '_' . $id_parcours . '_' . $row['id'] . '" value="' . $id_epr . '_' . $id_parcours . '_' . $row['id'] . '">';
-																				$td_content .= '<a class="btn btn-danger btn-xs bouton_suppression_point"><i class="fa fa-2x fa-trash-o bouton_suppression_point"></i></a></td>';
+																				$td_content .= '<a class="btn btn-danger btn-xs"><i class="fa fa-2x fa-trash-o bouton_suppression_point"></i></a></td>';
 																				$td_content .= '</tr>';
 
 																				echo $td_content;
@@ -671,8 +701,7 @@ function tarif_reduc_place($id_tarif)
 																			<td id="td_id_0">
 																			</td> <!-- id du point -->
 																			<td>
-																				<select id="td_category_0" class="form-select form-select-lg mb-3" style="max-width:90%;" aria-label=".form-select-lg" data-parsley-group="wizard-step-1">
-																					<!-- <option selected="yes"></option> TODO à mettre sur la couleur en BDD -->
+																				<select id="category_0" class="form-select form-select-lg mb-3" style="max-width:90%;" aria-label=".form-select-lg" data-parsley-group="wizard-step-1">
 																					<option value="Départ">Départ</option>
 																					<option value="Arrivée">Arrivée</option>
 																					<option value="Départ/Arrivée">Départ/Arrivée</option>
@@ -681,10 +710,13 @@ function tarif_reduc_place($id_tarif)
 																				</select>
 																			</td>
 																			<td>
-																				<input id="td_distance_depart_0" type="text" class="form-control input-group-lg" data-parsley-group="wizard-step-1" placeholder="0.0000, 00.0000, 000 ou 000.00">
+																				<input id="distance_depart_0" type="text" class="form-control input-group-lg" data-parsley-group="wizard-step-1" placeholder="0.0000, 00.0000, 000">
 																			</td>
 																			<td>
-																				<input type="text" id="td_popupContent_0" class="form-control input-group-lg" data-parsley-group="wizard-step-1" placeholder="Message à afficher dans la popup du point">
+																				<input type="text" id="popupContent_0" class="form-control input-group-lg" data-parsley-group="wizard-step-1" placeholder="Message à afficher dans la popup du point">
+																			</td>
+																			<td>
+																				<input type="text" id="id_lecteur_0" class="form-control input-group-lg" data-parsley-group="wizard-step-1">
 																			</td>
 																			<td style="text-align: center"><a id="bouton_ajout_point" class="btn btn-success btn-xs bouton_ajout_point" data-original-title="Ajouter un point"><i class="fa fa-2x fa-plus-circle"></i></a></td>
 																		</tr>
@@ -842,11 +874,10 @@ function tarif_reduc_place($id_tarif)
 			var id_point = [];
 
 			form.querySelectorAll('.tablerow').forEach(item => {
-				alert("item : "+item.id);
 				nb_points++;
 				id_point[nb_points] = item.id.split("_")[1];
 			});
-			
+
 			for (var i = 1; i < nb_parcours + 1; i++) {
 				var input = document.createElement('input');
 				input.type = "text";
@@ -905,13 +936,13 @@ function tarif_reduc_place($id_tarif)
 			// S'il y a déjà une ligne récupérer l'id du dernier point sinon partir de 1
 			currentTable = e.currentTarget.closest('table');
 			requiredField = e.currentTarget.closest('tr').children[2].firstElementChild;
-			if (requiredField.value == ""){
+			if (requiredField.value == "") {
 				requiredField.style.backgroundColor = "#ffcccb";
-				if(requiredField.nextSibling.tagName != "SPAN")
+				if (requiredField.nextSibling.tagName != "SPAN")
 					requiredField.insertAdjacentHTML("afterend", "<span>mauvais format</span>");
 				return;
 			}
-			
+
 			if (countRows(currentTable) >= 1) {
 				var id = parseInt(document.getElementById("tr_0").previousElementSibling.querySelector("td").querySelector("h4").innerHTML) + 1;
 			} else {
@@ -921,9 +952,10 @@ function tarif_reduc_place($id_tarif)
 			const id_epreuve = <?php echo $_GET['epre_id'] ?>;
 			var id_parcours = currentTable.id.split("_");
 			id_parcours = id_parcours[2];
-			const category = document.getElementById("td_category_0").value;
-			const distance_depart = document.getElementById("td_distance_depart_0").value;
-			const popupContent = document.getElementById("td_popupContent_0").value;
+			const category = document.getElementById("category_0").value;
+			const distance_depart = document.getElementById("distance_depart_0").value;
+			const popupContent = document.getElementById("popupContent_0").value;
+			const id_lecteur = document.getElementById("id_lecteur_0").value;
 
 			document.getElementById("tr_0").insertAdjacentHTML('beforebegin', `
 				<tr id="tr_${id}" class="tablerow">
@@ -943,6 +975,9 @@ function tarif_reduc_place($id_tarif)
 					<td>
 						<input type="text" name="popupContent_${id}" class="form-control input-group-lg" data-parsley-group="wizard-step-1" value="${popupContent}">
 					</td>
+					<td>
+						<input type="text" name="id_lecteur_${id}" class="form-control input-group-lg" data-parsley-group="wizard-step-1" value="${id_lecteur}">
+					</td>
 					<td style="text-align: center">
 						<a class="btn btn-danger btn-xs">
 							<input type="hidden" name="id_${id_epreuve}_${id_parcours}_${id}" value="${id_epreuve}_${id_parcours}_${id}">
@@ -951,10 +986,18 @@ function tarif_reduc_place($id_tarif)
 					</td>																
 				</tr>
 			`);
+			document.getElementById(`category_${id}`).value = category;
 
-			document.getElementById(`td_category_${id}`).value = category;
-
-			//Effacer le contenu de la ligne d'insertion #TODO
+			//Effacer le contenu de la ligne d'insertion
+			var nodes = document.getElementById("category_0").children;
+			for (var i = 1; i < nodes.length; i++) {
+				if (nodes[i].nodeName.toLowerCase() == 'option')
+					nodes[i].setAttribute('selected', false);
+			}
+			document.getElementById("category_0").firstElementChild.setAttribute('selected', true);
+			document.getElementById("distance_depart_0").value = "";
+			document.getElementById("popupContent_0").value = "";
+			document.getElementById("id_lecteur_0").value = "";
 		}
 
 		function onDeleteRow(e) {
@@ -964,8 +1007,8 @@ function tarif_reduc_place($id_tarif)
 			}
 			var verification = confirm("Êtes vous sûr de vouloir supprimer ce point ?");
 			if (verification) {
-				var ids = btn.previousElementSibling.value.split('_');
-				console.log('btn : ' + btn.previousElementSibling.value + ' id : ' + ids[2] + ' id_parcours : ' + ids[1] + ' id_epreuve ' + ids[0])
+				var ids = btn.parentElement.previousElementSibling.value.split('_');
+				console.log('btn : ' + btn.parentElement.previousElementSibling.value + ' id : ' + ids[2] + ' id_parcours : ' + ids[1] + ' id_epreuve ' + ids[0])
 				$.ajax({
 					url: "ajax_remove_carto.php",
 					type: 'POST',
