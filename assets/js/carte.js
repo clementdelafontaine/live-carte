@@ -42,9 +42,6 @@ async function initCarte() {
   var interIcon = new PointIcon({ iconUrl: c_inter });
   var ravitoIcon = new PointIcon({ iconUrl: c_ravito });
 
-  // Construction de la partie carte et chargement des tuiles
-  carteDeBase();
-
   let dataGeojson = new Array();
   let noms = new Array();
   var parcoursCourants = new L.FeatureGroup();
@@ -53,7 +50,9 @@ async function initCarte() {
   //#TODO créer une promise contenant la boucle for
   //chargement des urls
   readTextFile(root+'leaflet/geojson/' + idEpreuve + '/url.json')
-    .then(function (text) {
+    .then( (text) => {
+      // Construction de la partie carte et chargement des tuiles
+      carteDeBase();
       var url = JSON.parse(text);
       console.log(url);
       var nbCouches = url.length;
@@ -125,18 +124,38 @@ async function initCarte() {
         "nbCouches": nbCouches,
         "dataGeojson": dataGeojson
       };
+    },
+    (error) => {
+      $.ajax({
+        url: '/ajax_get_fiche.php',
+        data: {'idEpreuve': idEpreuve},
+        type: 'POST',
+        success: function (nomFiche) {
+          if (nomFiche != ""){
+            console.log("Impossible de récupérer les traces de l'épreuve, affichage de la fiche : "+nomFiche);
+            document.getElementById('mapid').innerHTML = 
+              '<a href="/admin/fichiers_epreuves/'+nomFiche+'" data-lightbox="image_epreuve" ><img src="/admin/fichiers_epreuves/'+nomFiche+'" class="img_epreuve" id="img-home" alt="fiche epreuve"></a>';
+          } else {
+            console.log("Impossible de récupérer les traces de l'épreuve, affichage par défaut");
+            document.getElementById('mapid').innerHTML = 
+              '<a href="/images/defaut_image_epreuve_occitanie.png" data-lightbox="image_epreuve" ><img src="/images/defaut_image_epreuve_occitanie.png" class="img_epreuve" id="img-home" alt="image par défaut"></a>';
+          }
+        }
+      });
     })
     .then(function(data) {
-      setTimeout(function () {
-      // Ajout des couches dans le panneau latéral et affichage des parcours sur la carte après l'animation
-        var parcours = {
-        };
-        for (let i = 0; i < data.nbCouches; i++) {
-          parcours[noms[i]] = data.dataGeojson[i];
-          data.dataGeojson[i].addTo(carte);
-        }
-        L.control.layers(baseMaps, parcours).addTo(carte);
-      }, 5000);
+      if(data != undefined){
+        setTimeout(function () {
+        // Ajout des couches dans le panneau latéral et affichage des parcours sur la carte après l'animation
+          var parcours = {
+          };
+          for (let i = 0; i < data.nbCouches; i++) {
+            parcours[noms[i]] = data.dataGeojson[i];
+            data.dataGeojson[i].addTo(carte);
+          }
+          L.control.layers(baseMaps, parcours).addTo(carte);
+        }, 5000);
+      }
     });
 }
 
@@ -150,6 +169,9 @@ function readTextFile(file, callback) {
       console.log("readyState : " + this.readyState + " status : " + this.status);
       if (this.readyState == 4 && this.status == 200) {
         resolve(this.responseText);
+      }
+      if ((this.readyState == 4 && this.status == 404) || (this.readyState == 4 && this.status == 500)) {
+        reject(this.responseText);
       }
     }
     xmlhttp.send(null);
