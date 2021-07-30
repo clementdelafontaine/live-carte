@@ -204,78 +204,93 @@
                                 return newGeoJSON;
                             }
                         }).then(function(data) {
-                            data = editionGeojson(data);
-                            return data;
+                            // data = editionGeojson(data);
+                            // return data;
+                            resolve(editionGeojson(data));
                         });
                 } else if (file != undefined) { // Pas de fichier ou mauvais format
                     // On vérifie si un fichier existe, si oui on récupère la trace et dans tous les cas on concatène les points
-                    dataOK = readTextFile(file)
+                    readTextFile(file)
                         .then(function(data) {
-                            // Le fichier existe
-                            alert("before copy "+data);
-                            return copyTrace(data);
+                            if (data == undefined){
+                                // Pas de fichier
+                                var text = `{
+                                        "type": "FeatureCollection",
+                                        "features": [{
+                                            "type": "Feature",
+                                            "properties": {
+                                                "id": ${trace.features[feature].properties.id},
+                                                "name": "${trace.features[feature].properties.name}",
+                                                "distance": ${trace.features[feature].properties.distance},
+                                                "color": "${trace.features[feature].properties.color}"
+                                            },
+                                            "geometry": {
+                                                "type": "MultiLineString",
+                                                "coordinates": []
+                                            }
+                                        }]
+                                    }`;
+                                var newGeoJSON = JSON.parse(text);
+                                return editionGeojson(newGeoJSON);
+                            } else {
+                                // Le fichier existe
+                                console.log("before copy "+data);
+                                return copyTrace(data);
+                            }
                         }).then(function(copie) {
-                            return editionGeojson(copie);
+                            // return editionGeojson(copie);
+
+                            // console.log("dataOK : " + dataOK);
+                            resolve(editionGeojson(copie));
                         });
-                    // .catch(function(err) {
-                    //     // Pas de fichier
-                    //     var newGeoJSON = {
-                    //         "type": "FeatureCollection",
-                    //         "features": [{}]
-                    //     };
-                    //     data = editionGeojson(newGeoJSON);
-                    // });
                 } else {
                     dataOK = "";
                     console.log("Format de fichier incorrect : " + type);
+                    resolve("");
                 }
-                console.log("dataOK : " + dataOK);
-                resolve(dataOK);
             });
         }
 
-        function copyTrace(trace) {
-            var newGeoJSON = {
-                "type": "FeatureCollection",
-                "features": [{
-                    "type": "Feature",
-                    "properties": {},
-                    "geometry": {
-                        "type": "",
-                        "coordinates": []
-                    }
-                }]
-            };
-            alert(trace);
-            // alert(trace["type"]);
-            // for (var feature in trace.features) {
-            //     alert(trace);
-            //     if (trace.features[feature].geometry != undefined) {
-            //         if (trace.features[feature].geometry.type == "MultiLineString") {
-            //             newGeoJSON.features.geometry.type = "MultiLineString";
-            //             newGeoJSON.features.geometry.coordinates = trace.features[feature].geometry.coordinates;
-            //             console.log(newGeoJSON);
-            //         }
-            //     }
-            // }
+        function copyTrace(data) {
+            var trace = JSON.parse(data);
+
             for (var feature in trace.features) {
-                alert("in it");
-                // if (data.features[feature].geometry != undefined)
-                //     var typeFeature = data.features[feature].geometry.type;
-                // else
-                //     var typeFeature = "";
-                // // Traitement Trace
-                // if (typeFeature == "MultiLineString") {}
+                if (trace.features[feature].geometry.type != undefined) {
+                    if (trace.features[feature].geometry.type == "MultiLineString") {
+                        var text = `{
+                                        "type": "FeatureCollection",
+                                        "features": [{
+                                            "type": "Feature",
+                                            "properties": {
+                                                "id": ${trace.features[feature].properties.id},
+                                                "name": "${trace.features[feature].properties.name}",
+                                                "distance": ${trace.features[feature].properties.distance},
+                                                "color": "${trace.features[feature].properties.color}"
+                                            },
+                                            "geometry": {
+                                                "type": "MultiLineString",
+                                                "coordinates": [[`;
+                        for(var point in trace.features[feature].geometry.coordinates[0]){
+                            if (!(point == 0))
+                                text += `,\n[${trace.features[feature].geometry.coordinates[0][point]}]`;
+                            else
+                                text += `[${trace.features[feature].geometry.coordinates[0][point]}]`;
+                        }
+                        
+                        text +=                        `]]                
+                                            }
+                                        }]
+                                    }`;
+
+                        console.log(text);
+                        var newGeoJSON = JSON.parse(text);
+                        console.log(newGeoJSON);
+                        return newGeoJSON;
+                    }
+                }
             }
 
-            return newGeoJSON;
-            // trace.forEach(function(object) {
-            //     alert(object.feature);
-            // }).then(function(){
-            // return new Promise(function(resolve, reject) {
-            //     return data;
-            // });
-            // });
+            return null;
         }
 
         function editionGeojson(data) {
@@ -372,7 +387,7 @@
         processFile()
             .then(function(data) {
                 // Enregistrement du fichier geojson
-                alert("oi" + data);
+                console.log("data before save" + data);
                 var fd = new FormData();
                 fd.append("json", JSON.stringify(data));
                 fd.append("filename", uploadFolder + idParcours + '.geojson');
